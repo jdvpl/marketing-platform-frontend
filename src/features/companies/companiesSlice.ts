@@ -20,14 +20,14 @@ const initialState: CompaniesState = {
   error: null,
 };
 
-export const fetchCompanies = createAsyncThunk('companies/fetchAll', async () => {
-  const response = await apiClient.get('/v1/companies');
-  return response.data;
+export const fetchCompanies = createAsyncThunk<Company[], void>('companies/fetchAll', async () => {
+  const data = await apiClient.get<Company[]>('/v1/companies');
+  return data;
 });
 
-export const createCompany = createAsyncThunk('companies/create', async (name: string) => {
-  const response = await apiClient.post('/v1/companies', { name });
-  return response.data;
+export const createCompany = createAsyncThunk<Company, string>('companies/create', async (name: string) => {
+  const result = await apiClient.post<Company>('/v1/companies', { name });
+  return result;
 });
 
 export const deleteCompany = createAsyncThunk('companies/delete', async (id: string) => {

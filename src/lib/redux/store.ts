@@ -5,6 +5,7 @@ import brandsReducer from '@/features/brands/brandsSlice';
 import campaignsReducer from '@/features/campaigns/campaignsSlice';
 import uploadReducer from '@/features/upload/uploadSlice';
 import chatbotReducer from '@/features/chatbot/chatbotSlice';
+import socialReducer from '@/features/social/socialSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     campaigns: campaignsReducer,
     upload: uploadReducer,
     chatbot: chatbotReducer,
+    social: socialReducer,
   },
 });
 

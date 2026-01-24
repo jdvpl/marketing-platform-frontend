@@ -22,14 +22,14 @@ const initialState: CampaignsState = {
   error: null,
 };
 
-export const fetchCampaigns = createAsyncThunk('campaigns/fetchAll', async (brandId: string) => {
-  const response = await apiClient.get(`/v1/campaigns/brand/${brandId}`);
-  return response.data;
+export const fetchCampaigns = createAsyncThunk<Campaign[], string>('campaigns/fetchAll', async (brandId: string) => {
+  const data = await apiClient.get<Campaign[]>(`/v1/campaigns/brand/${brandId}`);
+  return data;
 });
 
-export const createCampaign = createAsyncThunk('campaigns/create', async (data: Partial<Campaign>) => {
-  const response = await apiClient.post('/v1/campaigns', data);
-  return response.data;
+export const createCampaign = createAsyncThunk<Campaign, Partial<Campaign>>('campaigns/create', async (data: Partial<Campaign>) => {
+  const result = await apiClient.post<Campaign>('/v1/campaigns', data);
+  return result;
 });
 
 export const deleteCampaign = createAsyncThunk('campaigns/delete', async ({ id, brandId }: { id: string; brandId: string }) => {

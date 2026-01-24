@@ -22,14 +22,14 @@ const initialState: BrandsState = {
   error: null,
 };
 
-export const fetchBrands = createAsyncThunk('brands/fetchAll', async (companyId: string) => {
-  const response = await apiClient.get(`/v1/brands?companyId=${companyId}`);
-  return response.data;
+export const fetchBrands = createAsyncThunk<Brand[], string>('brands/fetchAll', async (companyId: string) => {
+  const data = await apiClient.get<Brand[]>(`/v1/brands?companyId=${companyId}`);
+  return data;
 });
 
-export const createBrand = createAsyncThunk('brands/create', async (data: Partial<Brand>) => {
-  const response = await apiClient.post('/v1/brands', data);
-  return response.data;
+export const createBrand = createAsyncThunk<Brand, Partial<Brand>>('brands/create', async (data: Partial<Brand>) => {
+  const result = await apiClient.post<Brand>('/v1/brands', data);
+  return result;
 });
 
 export const deleteBrand = createAsyncThunk('brands/delete', async (id: string) => {

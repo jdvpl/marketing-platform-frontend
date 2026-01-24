@@ -15,9 +15,16 @@ const initialState: UploadState = {
   error: null,
 };
 
-export const uploadFile = createAsyncThunk(
+interface UploadResponse {
+  url: string;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+}
+
+export const uploadFile = createAsyncThunk<UploadResponse, { file: File; folder?: string }>(
   'upload/uploadFile',
-  async ({ file, folder }: { file: File; folder?: string }, { rejectWithValue }) => {
+  async ({ file, folder }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -25,7 +32,7 @@ export const uploadFile = createAsyncThunk(
         formData.append('folder', folder);
       }
 
-      const response = await apiClient.post('/v1/storage/upload', formData, {
+      const data = await apiClient.post<UploadResponse>('/v1/storage/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -37,19 +44,19 @@ export const uploadFile = createAsyncThunk(
         },
       });
 
-      return response.data;
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Upload failed');
     }
   }
 );
 
-export const deleteFile = createAsyncThunk(
+export const deleteFile = createAsyncThunk<{ success: boolean }, string>(
   'upload/deleteFile',
   async (fileUrl: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.post('/v1/storage/delete', { fileUrl });
-      return response.data;
+      const data = await apiClient.post<{ success: boolean }>('/v1/storage/delete', { fileUrl });
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Delete failed');
     }

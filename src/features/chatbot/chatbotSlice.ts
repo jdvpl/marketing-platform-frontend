@@ -23,23 +23,29 @@ const initialState: ChatbotState = {
   isOpen: false,
 };
 
-export const sendMessage = createAsyncThunk(
+interface ChatResponse {
+  response: string;
+  message: string;
+  conversationId: string;
+}
+
+export const sendMessage = createAsyncThunk<ChatResponse, { message: string; userId: string; conversationId?: string }>(
   'chatbot/sendMessage',
-  async ({ message, userId, conversationId }: { message: string; userId: string; conversationId?: string }) => {
-    const response = await apiClient.post('/api/chatbot/chat', {
+  async ({ message, userId, conversationId }) => {
+    const data = await apiClient.post<ChatResponse>('/api/chatbot/chat', {
       message,
       userId,
       conversationId,
     });
-    return response.data;
+    return data;
   }
 );
 
-export const getHistory = createAsyncThunk(
+export const getHistory = createAsyncThunk<ChatMessage[], string>(
   'chatbot/getHistory',
   async (conversationId: string) => {
-    const response = await apiClient.get(`/api/chatbot/history/${conversationId}`);
-    return response.data;
+    const data = await apiClient.get<ChatMessage[]>(`/api/chatbot/history/${conversationId}`);
+    return data;
   }
 );
 
