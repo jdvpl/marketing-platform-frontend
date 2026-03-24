@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { COOKIE_NAMES, COOKIE_CONFIG, encodeValue } from '@/lib/cookies';
+import { COOKIE_NAMES, COOKIE_CONFIG } from '@/lib/cookies';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,19 +32,19 @@ export async function POST(request: NextRequest) {
 
     cookieStore.set(
       COOKIE_NAMES.ACCESS_TOKEN,
-      encodeValue(data.accessToken),
+      data.accessToken,
       COOKIE_CONFIG.ACCESS_TOKEN
     );
 
     cookieStore.set(
       COOKIE_NAMES.REFRESH_TOKEN,
-      encodeValue(data.refreshToken),
+      data.refreshToken,
       COOKIE_CONFIG.REFRESH_TOKEN
     );
 
     cookieStore.set(
       COOKIE_NAMES.USER,
-      encodeValue(JSON.stringify(data.user)),
+      JSON.stringify(data.user),
       COOKIE_CONFIG.USER
     );
 

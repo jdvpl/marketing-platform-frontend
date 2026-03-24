@@ -71,7 +71,14 @@ export function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
   if (!match) return null;
 
-  return decodeValue(match[2]);
+  const raw = match[2];
+
+  // Try URL-decoding first (server-side cookies may be URL-encoded)
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
 }
 
 /**
@@ -80,11 +87,10 @@ export function getCookie(name: string): string | null {
 export function setCookie(name: string, value: string, options?: { maxAge?: number; path?: string }): void {
   if (typeof document === 'undefined') return;
 
-  const encoded = encodeValue(value);
   const maxAge = options?.maxAge || 3600;
   const path = options?.path || '/';
 
-  document.cookie = `${name}=${encoded};path=${path};max-age=${maxAge};SameSite=Lax`;
+  document.cookie = `${name}=${encodeURIComponent(value)};path=${path};max-age=${maxAge};SameSite=Lax`;
 }
 
 /**

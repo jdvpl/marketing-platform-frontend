@@ -36,6 +36,13 @@ export const PROTECTED_ROUTE_PREFIXES = [
   PROTECTED_ROUTES.PAYMENTS,
   PROTECTED_ROUTES.SETTINGS,
   PROTECTED_ROUTES.PROFILE,
+  '/videos',
+  '/calendar',
+  '/hashtags',
+  '/comments',
+  '/ab-testing',
+  '/templates',
+  '/preview',
 ] as const;
 
 // Rutas de autenticación (solo accesibles sin estar autenticado)
