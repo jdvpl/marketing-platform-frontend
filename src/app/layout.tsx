@@ -7,8 +7,8 @@ import Chatbot from "@/components/Chatbot";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Marketing Platform - Social Media Management",
-  description: "Gestión de campañas de marketing y publicación en redes sociales",
+  title: "ContenixIA - Marketing inteligente, todo en uno",
+  description: "Plataforma SaaS de marketing digital con IA generativa, gestion de redes sociales y analytics",
 };
 
 export default function RootLayout({

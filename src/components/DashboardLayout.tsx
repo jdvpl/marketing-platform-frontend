@@ -68,9 +68,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="fixed inset-0 bg-gray-900/80" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 w-64 bg-white">
           <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Marketing Platform
-            </h1>
+            <div className="flex items-center gap-2">
+              <img src="/assets/icon.png" alt="ContenixIA" className="w-8 h-8 rounded-lg" />
+              <span className="text-lg font-bold text-gray-900">Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span></span>
+            </div>
             <button onClick={() => setSidebarOpen(false)} className="text-gray-500">
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -101,10 +102,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Marketing Platform
-            </h1>
+          <div className="flex h-16 items-center px-6 border-b border-gray-200 gap-2">
+            <img src="/assets/icon.png" alt="ContenixIA" className="w-8 h-8 rounded-lg" />
+            <span className="text-lg font-bold text-gray-900">Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span></span>
           </div>
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navigation.map((item) => {

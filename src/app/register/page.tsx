@@ -47,8 +47,9 @@ export default function RegisterPage() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Marketing Platform</h1>
-          <p className="text-gray-600 mt-2">Crea tu cuenta</p>
+          <img src="/assets/icon.png" alt="ContenixIA" className="w-14 h-14 rounded-xl mx-auto mb-3" />
+          <h1 className="text-3xl font-bold text-gray-900">Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span></h1>
+          <p className="text-gray-500 mt-2">Crea tu cuenta</p>
         </div>
 
         {error && (
