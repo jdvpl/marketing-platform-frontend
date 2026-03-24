@@ -52,7 +52,6 @@ function CallbackHandler() {
         // Esto asegura que el middleware vea las cookies recién seteadas
         window.location.href = '/dashboard';
       } catch (err) {
-        console.error('Auth callback error:', err);
         window.location.href = '/login?error=session_failed';
       }
     };

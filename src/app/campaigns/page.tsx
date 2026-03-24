@@ -2,40 +2,52 @@
 
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useCompanyBrand } from '@/hooks/useCompanyBrand';
 import { fetchCampaigns, createCampaign, deleteCampaign } from '@/features/campaigns/campaignsSlice';
-import { PlusIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, ChartBarIcon, EyeIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function CampaignsPage() {
   const dispatch = useAppDispatch();
+  const { selectedBrandId, selectedBrand } = useCompanyBrand();
   const { campaigns, isLoading, error } = useAppSelector((state) => state.campaigns);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     objective: '',
-    brandId: '550e8400-e29b-41d4-a716-446655440000', // Temporal
+    brandId: '',
   });
 
   useEffect(() => {
-    // Cargar campañas al montar el componente
-    dispatch(fetchCampaigns('550e8400-e29b-41d4-a716-446655440000'));
-  }, [dispatch]);
+    if (selectedBrandId) {
+      dispatch(fetchCampaigns(selectedBrandId));
+    }
+  }, [dispatch, selectedBrandId]);
+
+  useEffect(() => {
+    if (selectedBrandId) {
+      setNewCampaign((prev) => ({ ...prev, brandId: selectedBrandId }));
+    }
+  }, [selectedBrandId]);
 
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await dispatch(createCampaign(newCampaign));
+    if (!selectedBrandId) return;
+    const result = await dispatch(createCampaign({ ...newCampaign, brandId: selectedBrandId }));
     if (createCampaign.fulfilled.match(result)) {
       setShowCreateModal(false);
-      setNewCampaign({ name: '', objective: '', brandId: '550e8400-e29b-41d4-a716-446655440000' });
-      dispatch(fetchCampaigns('550e8400-e29b-41d4-a716-446655440000'));
+      setNewCampaign({ name: '', objective: '', brandId: selectedBrandId });
+      dispatch(fetchCampaigns(selectedBrandId));
     }
   };
 
   const handleDeleteCampaign = async (id: string) => {
+    if (!selectedBrandId) return;
     if (confirm('¿Estás seguro de eliminar esta campaña?')) {
-      await dispatch(deleteCampaign({ id, brandId: '550e8400-e29b-41d4-a716-446655440000' }));
-      dispatch(fetchCampaigns('550e8400-e29b-41d4-a716-446655440000'));
+      await dispatch(deleteCampaign({ id, brandId: selectedBrandId }));
+      dispatch(fetchCampaigns(selectedBrandId));
     }
   };
 
@@ -124,11 +136,22 @@ export default function CampaignsPage() {
                   </p>
                 )}
 
+                {expandedCampaign === campaign.id && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm space-y-1">
+                    <p><span className="text-gray-500">ID:</span> <span className="text-gray-700 font-mono text-xs">{campaign.id}</span></p>
+                    <p><span className="text-gray-500">Marca:</span> <span className="text-gray-700">{selectedBrand?.name || campaign.brandId}</span></p>
+                    <p><span className="text-gray-500">Estado:</span> <span className="text-gray-700">{campaign.status || 'DRAFT'}</span></p>
+                    <p><span className="text-gray-500">Objetivo:</span> <span className="text-gray-700">{campaign.objective || '—'}</span></p>
+                  </div>
+                )}
+
                 <div className="flex space-x-2">
                   <button
-                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
+                    onClick={() => setExpandedCampaign(expandedCampaign === campaign.id ? null : campaign.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 flex items-center justify-center gap-1"
                   >
-                    Ver Detalles
+                    <EyeIcon className="h-4 w-4" />
+                    {expandedCampaign === campaign.id ? 'Ocultar' : 'Ver Detalles'}
                   </button>
                   <button
                     onClick={() => handleDeleteCampaign(campaign.id)}

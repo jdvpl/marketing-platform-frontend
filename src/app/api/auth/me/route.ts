@@ -22,12 +22,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const encodedToken = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
 
-    console.log('ME endpoint - Cookie name:', COOKIE_NAMES.ACCESS_TOKEN);
-    console.log('ME endpoint - Encoded token exists:', !!encodedToken);
-    console.log('ME endpoint - All cookies:', cookieStore.getAll().map(c => c.name));
-
     if (!encodedToken) {
-      console.log('ME endpoint - No token found');
       return NextResponse.json(
         { error: 'No autenticado' },
         { status: 401 }
@@ -36,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     // Decode base64 token
     const accessToken = Buffer.from(decodeURIComponent(encodedToken), 'base64').toString('utf-8');
-    console.log('ME endpoint - Token decoded, length:', accessToken.length);
 
     if (!accessToken) {
       return NextResponse.json(
@@ -67,7 +61,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (error: any) {
-    console.error('Me endpoint error:', error);
     return NextResponse.json(
       { error: 'Token inválido o expirado' },
       { status: 401 }

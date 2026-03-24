@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(./mvnw quarkus:dev:*)",
+      "Bash(psql:*)",
+      "Bash(PGPASSWORD=postgres psql:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run build:*)",
+      "Bash(TOKEN=\"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL21hcmtldGluZy1wbGF0Zm9ybS5jb20iLCJzdWIiOiIyODg5YWZhMy0zN2QwLTRkODctOTFlMy00NTJkZjhjMTEwM2MiLCJ1cG4iOiJqdWFuZGE1NTQyNDJAZ21haWwuY29tIiwiZ3JvdXBzIjpbXSwicm9sZXMiOltdLCJlbWFpbCI6Imp1YW5kYTU1NDI0MkBnbWFpbC5jb20iLCJwcm92aWRlciI6IkdPT0dMRSIsImlhdCI6MTc2OTIyNjgwMiwiZXhwIjoxNzY5MjMwNDAyLCJqdGkiOiJhZWZiNTBhOC1iZjMwLTRhNzItOWJhZi05MTNkOGRlMGZjMjMifQ.cyuZk5zmnYCuwn1i16nYoa7z8WnVlWjGZlzwFqFYC-zq3pLruCWHJzS4nZfRdmc7KlsDojjxqMdxCb48ut7hUtl945pA7ckMlBUS-vHUKsN_PFBD1lZNWJCESivzG7qqEFToBemJTLa3vhtbz8vmnjWlWmZ6d9cnFbCo79IMsLO-1FsRk8JKZjHUzfM4YqyvyPDBEQhX_RiHyXFPkfgKMSiZ-lfHzmBz_wF7AXBN1qTTGjbL4PaJ8iW-pqiiebuJRRmE-ZPcF9Z51gLgIRH5qIDUdo8t1l2BtZB87M25x4WTLFsKiccf0nlYc4wTME6N_dQJ4OQ72y29Iex07aAHEw\")",
+      "Bash(python3:*)"
     ]
   }
 }

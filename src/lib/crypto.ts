@@ -5,7 +5,7 @@ const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_COOKIE_SECRET || 'mkt-platform-se
 // Convert string to ArrayBuffer
 function stringToArrayBuffer(str: string): ArrayBuffer {
   const encoder = new TextEncoder();
-  return encoder.encode(str);
+  return encoder.encode(str).buffer as ArrayBuffer;
 }
 
 // Convert ArrayBuffer to string

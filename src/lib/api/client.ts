@@ -1,32 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { API_CONFIG } from './config';
-import { COOKIE_NAMES } from '../crypto';
-
-// Cookie utilities
-const CookieUtils = {
-  get(name: string): string | null {
-    if (typeof document === 'undefined') return null;
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    if (!match) return null;
-    try {
-      const decoded = decodeURIComponent(match[2]);
-      return atob(decoded); // Decode base64
-    } catch {
-      return null;
-    }
-  },
-
-  delete(name: string) {
-    if (typeof document === 'undefined') return;
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-  },
-
-  deleteAll() {
-    this.delete(COOKIE_NAMES.ACCESS_TOKEN);
-    this.delete(COOKIE_NAMES.REFRESH_TOKEN);
-    this.delete('_mkt_user');
-  }
-};
+import { getCookie, clearAuthCookies, COOKIE_NAMES } from '../cookies';
 
 // Cliente principal de API con interceptores
 class ApiClient {
@@ -48,7 +22,7 @@ class ApiClient {
     // Request interceptor - Add token from cookies
     this.client.interceptors.request.use(
       (config) => {
-        const token = CookieUtils.get(COOKIE_NAMES.ACCESS_TOKEN);
+        const token = getCookie(COOKIE_NAMES.ACCESS_TOKEN);
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -62,7 +36,7 @@ class ApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          CookieUtils.deleteAll();
+          clearAuthCookies();
           if (this.onUnauthorized) {
             this.onUnauthorized();
           }
@@ -133,16 +107,55 @@ export const api = {
     accounts: () => apiClient.get('/v1/social/accounts'),
     connect: (provider: string) => apiClient.post(`/v1/social/connect/${provider}`),
     posts: () => apiClient.get('/v1/social/posts'),
+    publishAll: (data: any) => apiClient.post('/v1/social/publish/all', data),
+    repost: (data: any) => apiClient.post('/v1/social/publish/repost', data),
+    connectedAccounts: (brandId: string) => apiClient.get(`/v1/social/publish/accounts/${brandId}`),
+  },
+  videos: {
+    list: (brandId: string, provider?: string) =>
+      apiClient.get(`/v1/videos/brand/${brandId}${provider ? `?provider=${provider}` : ''}`),
+    get: (videoId: string) => apiClient.get(`/v1/videos/${videoId}`),
+    upload: (formData: FormData) =>
+      apiClient.post('/v1/videos/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    update: (videoId: string, data: any) => apiClient.put(`/v1/videos/${videoId}`, data),
+    delete: (videoId: string) => apiClient.delete(`/v1/videos/${videoId}`),
+  },
+  metrics: {
+    brand: (brandId: string) => apiClient.get(`/v1/metrics/brand/${brandId}`),
+    campaign: (campaignId: string) => apiClient.get(`/v1/metrics/campaign/${campaignId}`),
+    topPosts: (brandId: string, limit = 10) => apiClient.get(`/v1/metrics/brand/${brandId}/top-posts?limit=${limit}`),
+    sync: (campaignId: string) => apiClient.post(`/v1/metrics/sync/campaign/${campaignId}`),
+    record: (data: any) => apiClient.post('/v1/metrics/record', data),
+  },
+  growth: {
+    followers: (brandId: string, days = 30) => apiClient.get(`/v1/growth/brand/${brandId}/followers?days=${days}`),
+    bestTimes: (brandId: string, provider?: string) =>
+      apiClient.get(`/v1/growth/brand/${brandId}/best-times${provider ? `?provider=${provider}` : ''}`),
+    accounts: (brandId: string) => apiClient.get(`/v1/growth/brand/${brandId}/accounts`),
   },
   ai: {
     generateContent: (data: any) => apiClient.post('/v1/ai/generate', data),
     generateImage: (data: any) => apiClient.post('/v1/ai/generate-image', data),
+    videoScript: (data: any) => apiClient.post('/v1/ai/generate', { ...data, type: 'VIDEO_SCRIPT' }),
+    optimizeCaption: (data: any) => apiClient.post('/v1/ai/generate', { ...data, type: 'CAPTION_OPTIMIZATION' }),
+  },
+  chatbot: {
+    chat: (data: { message: string; userId: string; conversationId?: string }) =>
+      apiClient.post('/api/chatbot/chat', data),
+    history: (conversationId: string) =>
+      apiClient.get(`/api/chatbot/history/${conversationId}`),
+    clear: (conversationId: string) =>
+      apiClient.post(`/api/chatbot/clear/${conversationId}`),
   },
   payments: {
-    subscriptions: () => apiClient.get('/v1/payments/subscriptions'),
+    plans: () => apiClient.get('/v1/payments/plans'),
+    subscription: (companyId: string) => apiClient.get(`/v1/payments/subscription/${companyId}`),
     createCheckout: (data: any) => apiClient.post('/v1/payments/checkout', data),
+    createPortal: (data: { companyId: string; returnUrl?: string }) => apiClient.post('/v1/payments/portal', data),
+    cancelSubscription: (companyId: string) => apiClient.post(`/v1/payments/subscription/${companyId}/cancel`),
+    history: (companyId: string) => apiClient.get(`/v1/payments/subscription/company/${companyId}`),
   },
 };
 
-export { apiClient, CookieUtils };
+export { apiClient };
 export default apiClient;

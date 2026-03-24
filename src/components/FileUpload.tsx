@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { uploadFile, clearUpload } from '@/features/upload/uploadSlice';
+import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 
 interface FileUploadProps {
   folder?: string;
@@ -23,6 +25,7 @@ export default function FileUpload({
   const { isUploading, uploadedUrl, error } = useAppSelector((state) => state.upload);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const { toast, showToast, hideToast } = useToast();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,7 +36,7 @@ export default function FileUpload({
     if (file.size > maxSizeBytes) {
       const errorMsg = `El archivo es muy grande. Tamaño máximo: ${maxSize}MB`;
       if (onUploadError) onUploadError(errorMsg);
-      alert(errorMsg);
+      showToast(errorMsg);
       return;
     }
 
@@ -69,6 +72,7 @@ export default function FileUpload({
 
   return (
     <div className="w-full">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
       <div className="flex items-center justify-center w-full">
         <label
           htmlFor="file-upload"

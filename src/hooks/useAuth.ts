@@ -1,88 +1,44 @@
-import { useCallback, useMemo } from 'react';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { setCredentials, clearAuth } from '@/features/auth/authSlice';
-import { COOKIE_NAMES } from '@/lib/crypto';
-
-// Cookie helpers - ejecutan de manera síncrona
-function getCookieValue(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  if (!match) return null;
-  try {
-    return atob(decodeURIComponent(match[2]));
-  } catch {
-    return null;
-  }
-}
-
-function deleteCookie(name: string) {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-}
-
-// Verificación síncrona de autenticación
-function checkAuthSync(): { isAuthenticated: boolean; user: any | null } {
-  const userJson = getCookieValue('_mkt_user');
-  const hasToken = !!getCookieValue(COOKIE_NAMES.ACCESS_TOKEN);
-
-  if (userJson && hasToken) {
-    try {
-      return { isAuthenticated: true, user: JSON.parse(userJson) };
-    } catch {
-      return { isAuthenticated: false, user: null };
-    }
-  }
-  return { isAuthenticated: false, user: null };
-}
+import { getAuthFromCookies, clearAuthCookies } from '@/lib/cookies';
 
 export function useAuth() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const reduxState = useAppSelector((state) => state.auth);
+  const reduxAuth = useAppSelector((state) => state.auth);
+  const [isReady, setIsReady] = useState(false);
 
-  // Verificación síncrona: si Redux no tiene datos, leer de cookies
-  const authState = useMemo(() => {
-    if (reduxState.hasInitialized) {
-      return {
-        user: reduxState.user,
-        isAuthenticated: reduxState.isAuthenticated,
-        isLoading: false,
-      };
+  useEffect(() => {
+    if (reduxAuth.hasInitialized) {
+      setIsReady(true);
+      return;
     }
 
-    // Primera carga: verificar cookies síncronamente
-    const cookieAuth = checkAuthSync();
+    const cookieAuth = getAuthFromCookies();
 
-    // Actualizar Redux si encontramos auth en cookies
     if (cookieAuth.isAuthenticated && cookieAuth.user) {
-      // Esto se ejecutará en el siguiente tick
-      setTimeout(() => {
-        dispatch(setCredentials({ user: cookieAuth.user, token: 'cookie' }));
-      }, 0);
+      dispatch(setCredentials({ user: cookieAuth.user, token: cookieAuth.token || '' }));
     } else {
-      setTimeout(() => {
-        dispatch(clearAuth());
-      }, 0);
+      dispatch(clearAuth());
     }
 
-    return {
-      user: cookieAuth.user,
-      isAuthenticated: cookieAuth.isAuthenticated,
-      isLoading: false,
-    };
-  }, [reduxState.hasInitialized, reduxState.user, reduxState.isAuthenticated, dispatch]);
+    setIsReady(true);
+  }, [reduxAuth.hasInitialized, dispatch]);
 
   const logout = useCallback(() => {
-    deleteCookie(COOKIE_NAMES.ACCESS_TOKEN);
-    deleteCookie(COOKIE_NAMES.REFRESH_TOKEN);
-    deleteCookie('_mkt_user');
+    clearAuthCookies();
     dispatch(clearAuth());
     router.replace('/login');
   }, [dispatch, router]);
 
   return {
-    ...authState,
+    user: reduxAuth.user,
+    isAuthenticated: reduxAuth.isAuthenticated,
+    isLoading: !isReady,
     logout,
   };
 }

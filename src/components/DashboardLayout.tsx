@@ -18,8 +18,10 @@ import {
   XMarkIcon,
   BellIcon,
   BuildingOfficeIcon,
-  TagIcon
+  TagIcon,
+  FilmIcon,
 } from '@heroicons/react/24/outline';
+import CompanyBrandSelector from './CompanyBrandSelector';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
@@ -36,6 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Marcas', href: '/brands', icon: TagIcon },
     { name: 'Campañas', href: '/campaigns', icon: MegaphoneIcon },
     { name: 'Redes Sociales', href: '/social', icon: ShareIcon },
+    { name: 'Videos', href: '/videos', icon: FilmIcon },
     { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
     { name: 'IA Generativa', href: '/content-ai', icon: SparklesIcon },
     { name: 'Pagos', href: '/payments', icon: CreditCardIcon },
@@ -111,7 +115,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
           <div className="border-t border-gray-200 p-4">
             <Link
-              href="/dashboard/settings"
+              href="/settings"
               className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors mb-2"
             >
               <Cog6ToothIcon className="h-5 w-5 mr-3" />
@@ -141,16 +145,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1 items-center">
-              <h2 className="text-lg font-semibold text-gray-900">
+            <div className="flex flex-1 items-center gap-4">
+              <h2 className="text-lg font-semibold text-gray-900 hidden lg:block">
                 {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
               </h2>
+              <CompanyBrandSelector />
             </div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <button className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
-                <BellIcon className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+                >
+                  <BellIcon className="h-6 w-6" />
+                </button>
+                {notificationsOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <h3 className="text-sm font-semibold text-gray-900">Notificaciones</h3>
+                      </div>
+                      <div className="py-8 text-center">
+                        <BellIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">No tienes notificaciones</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
 

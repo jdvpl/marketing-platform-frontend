@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { register } from '@/features/auth/authSlice';
 import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -16,17 +18,18 @@ export default function RegisterPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { isLoading, error } = useAppSelector((state) => state.auth);
+  const { toast, showToast, hideToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      showToast('Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 8) {
-      alert('La contraseña debe tener al menos 8 caracteres');
+      showToast('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -34,13 +37,14 @@ export default function RegisterPage() {
       await dispatch(register({ email, password })).unwrap();
       router.push('/dashboard');
     } catch (err) {
-      console.error('Registration failed:', err);
+      // Error handled by Redux state
     }
   };
 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-600 p-4">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Marketing Platform</h1>

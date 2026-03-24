@@ -14,17 +14,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, style } = await request.json();
+    const { prompt, style, brandId } = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/ai/generate-image`, {
+    const response = await fetch(`${API_GATEWAY_URL}/v1/ai/generate`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        prompt,
-        style,
+        brandId,
+        type: 'IMAGE_GENERATION',
+        prompt: style ? `[Style: ${style}] ${prompt}` : prompt,
       }),
     });
 
@@ -39,7 +40,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error en /api/ai/generate-image:', error);
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

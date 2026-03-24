@@ -40,7 +40,7 @@ export const uploadFile = createAsyncThunk<UploadResponse, { file: File; folder?
           const percentCompleted = progressEvent.total
             ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
             : 0;
-          console.log('Upload progress:', percentCompleted);
+          // Progress tracked via Redux state
         },
       });
 

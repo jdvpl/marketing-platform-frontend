@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useCompanyBrand } from '@/hooks/useCompanyBrand';
 import { fetchCompanies, createCompany, deleteCompany } from '@/features/companies/companiesSlice';
 import { PlusIcon, TrashIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -9,6 +11,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function CompaniesPage() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { switchCompany } = useCompanyBrand();
   const { companies, isLoading, error } = useAppSelector((state) => state.companies);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
@@ -105,7 +109,7 @@ export default function CompaniesPage() {
 
                 <div className="flex space-x-2 mt-4">
                   <button
-                    onClick={() => alert(`Ver marcas de ${company.name}`)}
+                    onClick={() => { switchCompany(company.id); router.push('/brands'); }}
                     className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
                   >
                     Ver Marcas

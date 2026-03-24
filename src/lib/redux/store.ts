@@ -6,6 +6,10 @@ import campaignsReducer from '@/features/campaigns/campaignsSlice';
 import uploadReducer from '@/features/upload/uploadSlice';
 import chatbotReducer from '@/features/chatbot/chatbotSlice';
 import socialReducer from '@/features/social/socialSlice';
+import videosReducer from '@/features/videos/videosSlice';
+import metricsReducer from '@/features/metrics/metricsSlice';
+import paymentsReducer from '@/features/payments/paymentsSlice';
+import contextReducer from '@/features/context/contextSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +20,10 @@ export const store = configureStore({
     upload: uploadReducer,
     chatbot: chatbotReducer,
     social: socialReducer,
+    videos: videosReducer,
+    metrics: metricsReducer,
+    payments: paymentsReducer,
+    context: contextReducer,
   },
 });
 

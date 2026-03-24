@@ -11,25 +11,49 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [validationError, setValidationError] = useState('');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { isLoading, error } = useAppSelector((state) => state.auth);
 
+  const validateForm = (): boolean => {
+    setValidationError('');
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setValidationError('El correo es obligatorio');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setValidationError('Ingresa un correo electrónico válido');
+      return false;
+    }
+    if (!password) {
+      setValidationError('La contraseña es obligatoria');
+      return false;
+    }
+    if (password.length < 6) {
+      setValidationError('La contraseña debe tener al menos 6 caracteres');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     try {
-      await dispatch(login({ email, password })).unwrap();
+      await dispatch(login({ email: email.trim(), password })).unwrap();
       router.push('/dashboard');
     } catch (err) {
-      console.error('Login failed:', err);
+      // Error handled by Redux state
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // OAuth directo al auth-tenant-service para manejar redirects correctamente
-    // El API Gateway no maneja bien los 302 redirects del flujo OAuth
-    const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:5001';
-    window.location.href = `${authServiceUrl}/v1/auth/oauth/${provider}/connect`;
+    // OAuth a través del API Gateway
+    const apiGatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:5000';
+    window.location.href = `${apiGatewayUrl}/v1/auth/oauth/${provider}/connect`;
   };
 
   return (
@@ -40,9 +64,9 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Inicia sesión en tu cuenta</p>
         </div>
 
-        {error && (
+        {(error || validationError) && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+            {validationError || error}
           </div>
         )}
 

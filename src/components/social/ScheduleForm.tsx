@@ -1,27 +1,45 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useCompanyBrand } from '@/hooks/useCompanyBrand';
+import { fetchCampaigns } from '@/features/campaigns/campaignsSlice';
 import { schedulePost } from '@/features/social/socialSlice';
 
 interface ScheduleFormProps {
-  campaignId: string;
+  campaignId?: string;
   onSuccess?: () => void;
 }
 
-export default function ScheduleForm({ campaignId, onSuccess }: ScheduleFormProps) {
+export default function ScheduleForm({ campaignId: initialCampaignId, onSuccess }: ScheduleFormProps) {
   const dispatch = useAppDispatch();
+  const { selectedBrandId } = useCompanyBrand();
   const { isScheduling, error } = useAppSelector((state) => state.social);
+  const { campaigns } = useAppSelector((state) => state.campaigns);
 
   const [content, setContent] = useState('');
   const [provider, setProvider] = useState<'META' | 'TIKTOK' | 'YOUTUBE'>('META');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [campaignId, setCampaignId] = useState(initialCampaignId || '');
+
+  useEffect(() => {
+    if (selectedBrandId) {
+      dispatch(fetchCampaigns(selectedBrandId));
+    }
+  }, [dispatch, selectedBrandId]);
+
+  // Auto-select first campaign if none provided
+  useEffect(() => {
+    if (!campaignId && campaigns.length > 0) {
+      setCampaignId(campaigns[0].id);
+    }
+  }, [campaigns, campaignId]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!content.trim() || !scheduledDate || !scheduledTime) {
+    if (!content.trim() || !scheduledDate || !scheduledTime || !campaignId) {
       return;
     }
 
@@ -57,6 +75,32 @@ export default function ScheduleForm({ campaignId, onSuccess }: ScheduleFormProp
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Programar Publicación</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Campaign Selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Campaña
+          </label>
+          {campaigns.length === 0 ? (
+            <p className="text-sm text-gray-500 py-2">
+              No hay campañas disponibles. Crea una campaña primero.
+            </p>
+          ) : (
+            <select
+              value={campaignId}
+              onChange={(e) => setCampaignId(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Seleccionar campaña</option>
+              {campaigns.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} {c.status ? `(${c.status})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Red Social
@@ -125,7 +169,7 @@ export default function ScheduleForm({ campaignId, onSuccess }: ScheduleFormProp
 
         <button
           type="submit"
-          disabled={isScheduling || !content.trim() || !scheduledDate || !scheduledTime}
+          disabled={isScheduling || !content.trim() || !scheduledDate || !scheduledTime || !campaignId}
           className="w-full px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           {isScheduling ? 'Programando...' : 'Programar Publicación'}

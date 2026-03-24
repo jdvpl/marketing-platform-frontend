@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { SparklesIcon, PhotoIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { useCompanyBrand } from '@/hooks/useCompanyBrand';
 
 export default function ContentAIPage() {
+  const { selectedBrandId } = useCompanyBrand();
   const [activeTab, setActiveTab] = useState<'text' | 'image'>('text');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string>('');
@@ -20,6 +24,7 @@ export default function ContentAIPage() {
   // Formulario para imagen
   const [imagePrompt, setImagePrompt] = useState('');
   const [imageStyle, setImageStyle] = useState('realistic');
+  const { toast, showToast, hideToast } = useToast();
 
   const handleGenerateText = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +36,7 @@ export default function ContentAIPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          brandId: selectedBrandId,
           prompt: textPrompt,
           contentType,
           tone,
@@ -41,12 +47,12 @@ export default function ContentAIPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setGeneratedContent(data.content);
+        setGeneratedContent(data.resultText || data.content || '');
       } else {
-        alert(data.error || 'Error al generar contenido');
+        showToast(data.error || 'Error al generar contenido');
       }
     } catch (error) {
-      alert('Error de conexión');
+      showToast('Error de conexión');
     } finally {
       setIsGenerating(false);
     }
@@ -62,6 +68,7 @@ export default function ContentAIPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          brandId: selectedBrandId,
           prompt: imagePrompt,
           style: imageStyle,
         }),
@@ -70,12 +77,12 @@ export default function ContentAIPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setGeneratedImage(data.imageUrl);
+        setGeneratedImage(data.resultUrl || data.imageUrl || '');
       } else {
-        alert(data.error || 'Error al generar imagen');
+        showToast(data.error || 'Error al generar imagen');
       }
     } catch (error) {
-      alert('Error de conexión');
+      showToast('Error de conexión');
     } finally {
       setIsGenerating(false);
     }
@@ -83,12 +90,13 @@ export default function ContentAIPage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedContent);
-    alert('Contenido copiado al portapapeles');
+    showToast('Contenido copiado al portapapeles', 'success');
   };
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
+        {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         <div className="space-y-8">
         {/* Header */}
         <div className="mb-8">

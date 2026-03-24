@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { COOKIE_NAMES, COOKIE_CONFIG } from '@/lib/constants';
+import { COOKIE_NAMES, COOKIE_CONFIG, encodeValue } from '@/lib/cookies';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,13 +27,27 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    // Almacenar tokens en cookies
+    // Almacenar tokens y usuario en cookies
     const cookieStore = await cookies();
 
-    cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, data.accessToken, COOKIE_CONFIG.ACCESS_TOKEN);
-    cookieStore.set(COOKIE_NAMES.REFRESH_TOKEN, data.refreshToken, COOKIE_CONFIG.REFRESH_TOKEN);
+    cookieStore.set(
+      COOKIE_NAMES.ACCESS_TOKEN,
+      encodeValue(data.accessToken),
+      COOKIE_CONFIG.ACCESS_TOKEN
+    );
 
-    // Retornar datos del usuario sin los tokens
+    cookieStore.set(
+      COOKIE_NAMES.REFRESH_TOKEN,
+      encodeValue(data.refreshToken),
+      COOKIE_CONFIG.REFRESH_TOKEN
+    );
+
+    cookieStore.set(
+      COOKIE_NAMES.USER,
+      encodeValue(JSON.stringify(data.user)),
+      COOKIE_CONFIG.USER
+    );
+
     return NextResponse.json({
       user: data.user,
       success: true,

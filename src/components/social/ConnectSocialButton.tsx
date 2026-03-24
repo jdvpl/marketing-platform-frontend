@@ -9,9 +9,9 @@ interface ConnectSocialButtonProps {
 }
 
 const socialProviders = [
-  { id: 'META', name: 'Meta (Facebook/Instagram)', icon: '📘', color: 'blue' },
-  { id: 'TIKTOK', name: 'TikTok', icon: '🎵', color: 'gray' },
-  { id: 'YOUTUBE', name: 'YouTube', icon: '📺', color: 'red' },
+  { id: 'META', name: 'Meta (Facebook/Instagram)', icon: '📘', color: 'bg-blue-50 hover:bg-blue-100 text-blue-700' },
+  { id: 'TIKTOK', name: 'TikTok', icon: '🎵', color: 'bg-gray-50 hover:bg-gray-100 text-gray-700' },
+  { id: 'YOUTUBE', name: 'YouTube', icon: '📺', color: 'bg-red-50 hover:bg-red-100 text-red-700' },
 ];
 
 export default function ConnectSocialButton({ brandId }: ConnectSocialButtonProps) {
@@ -38,21 +38,22 @@ export default function ConnectSocialButton({ brandId }: ConnectSocialButtonProp
       {showMenu && (
         <>
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
-            <div className="p-2">
+          <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+              <p className="text-sm font-semibold text-gray-700">Selecciona una red social</p>
+            </div>
+            <div className="p-2 space-y-1">
               {socialProviders.map((provider) => (
                 <button
                   key={provider.id}
                   onClick={() => handleConnect(provider.id)}
-                  className="w-full text-left px-4 py-3 rounded-md hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center space-x-3 ${provider.color}`}
                 >
                   <span className="text-2xl">{provider.icon}</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {provider.name}
-                  </span>
+                  <span className="text-sm font-semibold">{provider.name}</span>
                 </button>
               ))}
             </div>

@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error en /api/storage/upload:', error);
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
