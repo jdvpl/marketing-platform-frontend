@@ -43,6 +43,7 @@ export interface PublishResponse {
 
 export interface ScheduleRequest {
   campaignId: string;
+  brandId?: string;
   provider: 'META' | 'TIKTOK' | 'YOUTUBE';
   content: string;
   scheduledAt: string;
@@ -51,6 +52,7 @@ export interface ScheduleRequest {
 export interface ScheduledPost {
   id: string;
   campaignId: string;
+  brandId?: string;
   provider: string;
   content: string;
   scheduledAt: string;
@@ -65,7 +67,9 @@ export interface ScheduledPost {
 interface SocialState {
   accounts: SocialAccount[];
   scheduledPosts: ScheduledPost[];
+  calendarPosts: ScheduledPost[];
   isLoading: boolean;
+  isLoadingCalendar: boolean;
   isPublishing: boolean;
   isScheduling: boolean;
   error: string | null;
@@ -75,7 +79,9 @@ interface SocialState {
 const initialState: SocialState = {
   accounts: [],
   scheduledPosts: [],
+  calendarPosts: [],
   isLoading: false,
+  isLoadingCalendar: false,
   isPublishing: false,
   isScheduling: false,
   error: null,
@@ -178,6 +184,22 @@ export const schedulePost = createAsyncThunk(
   }
 );
 
+// Obtener publicaciones para el calendario
+export const fetchCalendarPosts = createAsyncThunk(
+  'social/fetchCalendar',
+  async ({ brandId, start, end }: { brandId: string; start: string; end: string }, { rejectWithValue }) => {
+    try {
+      const params = new URLSearchParams({ brandId, start, end });
+      const response = await fetch(`/api/social/calendar?${params}`);
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.error || 'Error al cargar calendario');
+      return data as ScheduledPost[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Error de red');
+    }
+  }
+);
+
 // Obtener publicaciones programadas
 export const fetchScheduledPosts = createAsyncThunk(
   'social/fetchScheduled',
@@ -273,6 +295,18 @@ const socialSlice = createSlice({
       })
       .addCase(fetchScheduledPosts.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Calendar posts
+      .addCase(fetchCalendarPosts.pending, (state) => {
+        state.isLoadingCalendar = true;
+      })
+      .addCase(fetchCalendarPosts.fulfilled, (state, action: PayloadAction<ScheduledPost[]>) => {
+        state.isLoadingCalendar = false;
+        state.calendarPosts = action.payload;
+      })
+      .addCase(fetchCalendarPosts.rejected, (state, action) => {
+        state.isLoadingCalendar = false;
         state.error = action.payload as string;
       });
   },

@@ -10,6 +10,10 @@ import videosReducer from '@/features/videos/videosSlice';
 import metricsReducer from '@/features/metrics/metricsSlice';
 import paymentsReducer from '@/features/payments/paymentsSlice';
 import contextReducer from '@/features/context/contextSlice';
+import hashtagsReducer from '@/features/hashtags/hashtagsSlice';
+import commentsReducer from '@/features/comments/commentsSlice';
+import abTestingReducer from '@/features/abtesting/abTestingSlice';
+import templatesReducer from '@/features/templates/templatesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +28,10 @@ export const store = configureStore({
     metrics: metricsReducer,
     payments: paymentsReducer,
     context: contextReducer,
+    hashtags: hashtagsReducer,
+    comments: commentsReducer,
+    abTesting: abTestingReducer,
+    templates: templatesReducer,
   },
 });
 

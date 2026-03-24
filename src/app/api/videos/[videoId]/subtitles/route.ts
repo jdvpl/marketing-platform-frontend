@@ -14,22 +14,23 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}/subtitles`, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
     const data = await response.json();
     if (!response.ok) {
-      return NextResponse.json({ error: data.error || 'Video no encontrado' }, { status: response.status });
+      return NextResponse.json({ error: data.error || 'Error al cargar subtitulos' }, { status: response.status });
     }
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Error en GET /api/videos/[videoId]/subtitles:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  _request: NextRequest,
+export async function POST(
+  request: NextRequest,
   { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
@@ -39,17 +40,24 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${accessToken}` },
+    const body = await request.json();
+
+    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}/subtitles`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const data = await response.json();
-      return NextResponse.json({ error: data.error || 'Error al eliminar video' }, { status: response.status });
+      return NextResponse.json({ error: data.error || 'Error al crear subtitulos' }, { status: response.status });
     }
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
+    console.error('Error en POST /api/videos/[videoId]/subtitles:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

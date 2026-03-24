@@ -20,6 +20,12 @@ import {
   BuildingOfficeIcon,
   TagIcon,
   FilmIcon,
+  CalendarDaysIcon,
+  HashtagIcon,
+  ChatBubbleLeftRightIcon,
+  BeakerIcon,
+  DocumentDuplicateIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline';
 import CompanyBrandSelector from './CompanyBrandSelector';
 
@@ -40,6 +46,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Campañas', href: '/campaigns', icon: MegaphoneIcon },
     { name: 'Redes Sociales', href: '/social', icon: ShareIcon },
     { name: 'Videos', href: '/videos', icon: FilmIcon },
+    { name: 'Calendario', href: '/calendar', icon: CalendarDaysIcon },
+    { name: 'Hashtags', href: '/hashtags', icon: HashtagIcon },
+    { name: 'Comentarios', href: '/comments', icon: ChatBubbleLeftRightIcon },
+    { name: 'A/B Testing', href: '/ab-testing', icon: BeakerIcon },
+    { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon },
+    { name: 'Preview', href: '/preview', icon: EyeIcon },
     { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
     { name: 'IA Generativa', href: '/content-ai', icon: SparklesIcon },
     { name: 'Pagos', href: '/payments', icon: CreditCardIcon },

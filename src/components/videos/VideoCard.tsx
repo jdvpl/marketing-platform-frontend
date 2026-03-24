@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { deleteVideo, Video } from '@/features/videos/videosSlice';
 import { repost } from '@/features/metrics/metricsSlice';
+import Link from 'next/link';
 import {
   PlayIcon,
   TrashIcon,
   ArrowPathRoundedSquareIcon,
+  PencilSquareIcon,
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -141,6 +143,15 @@ export default function VideoCard({ video }: Props) {
             <ArrowPathRoundedSquareIcon className="h-4 w-4" />
             Publicar en otra red
           </button>
+          {video.status === 'READY' && (
+            <Link
+              href={`/videos/editor?videoId=${video.id}`}
+              className="flex items-center justify-center p-2 text-purple-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+              title="Editar video"
+            >
+              <PencilSquareIcon className="h-4 w-4" />
+            </Link>
+          )}
           <a
             href={video.storageUrl}
             target="_blank"
