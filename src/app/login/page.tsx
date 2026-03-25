@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { login } from '@/features/auth/authSlice';
@@ -14,6 +14,11 @@ export default function LoginPage() {
   const [validationError, setValidationError] = useState('');
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const redirectTo = useMemo(() => {
+    if (typeof window === 'undefined') return '/dashboard';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('redirect') || '/dashboard';
+  }, []);
   const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const validateForm = (): boolean => {
@@ -44,7 +49,7 @@ export default function LoginPage() {
     if (!validateForm()) return;
     try {
       await dispatch(login({ email: email.trim(), password })).unwrap();
-      router.push('/dashboard');
+      router.push(redirectTo);
     } catch (err) {
       // Error handled by Redux state
     }

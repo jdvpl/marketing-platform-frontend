@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { COOKIE_NAMES } from '@/lib/crypto';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 function decodeJWT(token: string) {
   try {
@@ -12,7 +12,7 @@ function decodeJWT(token: string) {
     const payload = parts[1];
     const decoded = Buffer.from(payload, 'base64').toString('utf-8');
     return JSON.parse(decoded);
-  } catch (error) {
+  } catch {
     throw new Error('Failed to decode JWT');
   }
 }
@@ -20,17 +20,7 @@ function decodeJWT(token: string) {
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const encodedToken = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
-
-    if (!encodedToken) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      );
-    }
-
-    // Decode base64 token
-    const accessToken = Buffer.from(decodeURIComponent(encodedToken), 'base64').toString('utf-8');
+    const accessToken = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -60,7 +50,7 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ user });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       { error: 'Token inválido o expirado' },
       { status: 401 }

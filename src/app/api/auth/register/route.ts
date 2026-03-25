@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     // Llamar al backend de autenticación
-    const apiUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:5000';
+    const apiUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:5001';
     const response = await fetch(`${apiUrl}/v1/auth/register`, {
       method: 'POST',
       headers: {

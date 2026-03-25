@@ -1,66 +1,9 @@
 /**
- * Módulo unificado para manejo de cookies con codificación
- * Funciones síncronas para usar en cliente y servidor
+ * Módulo para manejo de cookies - sin encriptación
+ * Valores se guardan en texto plano (el JWT ya viene firmado por el backend)
  */
 
 import { COOKIE_NAMES, COOKIE_CONFIG } from '@/lib/constants';
-
-// Clave para ofuscación simple (no es encriptación fuerte, pero evita lectura casual)
-const OBFUSCATION_KEY = process.env.NEXT_PUBLIC_COOKIE_SECRET || 'mkt-2024';
-
-/**
- * Codifica un valor para almacenar en cookie
- */
-export function encodeValue(value: string): string {
-  try {
-    // XOR simple + base64 para ofuscación
-    const encoded = value
-      .split('')
-      .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ OBFUSCATION_KEY.charCodeAt(i % OBFUSCATION_KEY.length)))
-      .join('');
-    return btoa(encodeURIComponent(encoded));
-  } catch {
-    return btoa(encodeURIComponent(value));
-  }
-}
-
-/**
- * Decodifica un valor de cookie
- * Maneja múltiples formatos: XOR+base64, solo base64, URL-encoded, o texto plano
- */
-export function decodeValue(encoded: string): string | null {
-  if (!encoded) return null;
-
-  try {
-    // Si es URL-encoded (empieza con %7B para JSON), decodificar
-    if (encoded.startsWith('%7B') || encoded.startsWith('%22')) {
-      return decodeURIComponent(encoded);
-    }
-
-    // Si parece ser un JWT (tiene dos puntos), devolverlo tal cual
-    if (encoded.includes('.') && encoded.split('.').length === 3) {
-      return encoded;
-    }
-
-    // Intentar XOR + base64
-    try {
-      const decoded = decodeURIComponent(atob(encoded));
-      return decoded
-        .split('')
-        .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ OBFUSCATION_KEY.charCodeAt(i % OBFUSCATION_KEY.length)))
-        .join('');
-    } catch {
-      // Intentar solo base64
-      try {
-        return decodeURIComponent(atob(encoded));
-      } catch {
-        return encoded;
-      }
-    }
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Obtiene el valor de una cookie (cliente)
@@ -73,7 +16,6 @@ export function getCookie(name: string): string | null {
 
   const raw = match[2];
 
-  // Try URL-decoding first (server-side cookies may be URL-encoded)
   try {
     return decodeURIComponent(raw);
   } catch {
@@ -87,7 +29,7 @@ export function getCookie(name: string): string | null {
 export function setCookie(name: string, value: string, options?: { maxAge?: number; path?: string }): void {
   if (typeof document === 'undefined') return;
 
-  const maxAge = options?.maxAge || 3600;
+  const maxAge = options?.maxAge || COOKIE_CONFIG.ACCESS_TOKEN.maxAge;
   const path = options?.path || '/';
 
   document.cookie = `${name}=${encodeURIComponent(value)};path=${path};max-age=${maxAge};SameSite=Lax`;

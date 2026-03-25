@@ -15,7 +15,7 @@ interface PlatformPreviewProps {
   username?: string;
 }
 
-const PLATFORM_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: JSX.Element }> = {
+const PLATFORM_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   instagram: {
     label: 'Instagram',
     color: 'text-pink-600',

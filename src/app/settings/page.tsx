@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import apiClient from '@/lib/api/client';
 import {
   UserCircleIcon,
   BellIcon,
@@ -10,88 +9,125 @@ import {
   PaintBrushIcon,
   KeyIcon,
   CheckCircleIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-const SETTINGS_KEY = 'marketing_user_settings';
-
 interface UserSettings {
-  profile: { name: string; company: string; phone: string };
-  notifications: { emailNotifications: boolean; campaignAlerts: boolean; weeklyReports: boolean; socialMentions: boolean };
-  security: { twoFactorAuth: boolean; sessionTimeout: string };
-  appearance: { theme: string; language: string; timezone: string };
+  fullName: string;
+  phone: string;
+  emailNotifications: boolean;
+  campaignAlerts: boolean;
+  weeklyReports: boolean;
+  socialMentions: boolean;
+  twoFactorAuth: boolean;
+  sessionTimeout: number;
+  theme: string;
+  language: string;
+  timezone: string;
 }
 
-function loadSettings(email: string): UserSettings {
-  try {
-    const raw = localStorage.getItem(`${SETTINGS_KEY}_${email}`);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return {
-    profile: { name: '', company: '', phone: '' },
-    notifications: { emailNotifications: true, campaignAlerts: true, weeklyReports: true, socialMentions: false },
-    security: { twoFactorAuth: false, sessionTimeout: '30' },
-    appearance: { theme: 'light', language: 'es', timezone: 'America/Mexico_City' },
-  };
-}
-
-function saveSettings(email: string, settings: UserSettings) {
-  localStorage.setItem(`${SETTINGS_KEY}_${email}`, JSON.stringify(settings));
-}
+const defaultSettings: UserSettings = {
+  fullName: '',
+  phone: '',
+  emailNotifications: true,
+  campaignAlerts: true,
+  weeklyReports: true,
+  socialMentions: false,
+  twoFactorAuth: false,
+  sessionTimeout: 30,
+  theme: 'light',
+  language: 'es',
+  timezone: 'America/Bogota',
+};
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
-  const [settings, setSettings] = useState<UserSettings>(() =>
-    loadSettings(user?.email || '')
-  );
+  const [settings, setSettings] = useState<UserSettings>(defaultSettings);
 
   // Password change
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Load settings when user is available
+  // Load settings from API
+  const loadSettings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user?.email) {
-      setSettings(loadSettings(user.email));
+      loadSettings();
     }
-  }, [user?.email]);
+  }, [user?.email, loadSettings]);
 
-  const updateProfile = (field: string, value: string) => {
-    setSettings((s) => ({ ...s, profile: { ...s.profile, [field]: value } }));
-  };
-
-  const updateNotifications = (field: string, value: boolean) => {
-    setSettings((s) => ({ ...s, notifications: { ...s.notifications, [field]: value } }));
-  };
-
-  const updateSecurity = (field: string, value: string | boolean) => {
-    setSettings((s) => ({ ...s, security: { ...s.security, [field]: value } }));
-  };
-
-  const updateAppearance = (field: string, value: string) => {
-    setSettings((s) => ({ ...s, appearance: { ...s.appearance, [field]: value } }));
+  const updateField = (field: keyof UserSettings, value: string | boolean | number) => {
+    setSettings((s) => ({ ...s, [field]: value }));
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setSaveSuccess(false);
+    setSaveError('');
 
-    saveSettings(user?.email || '', settings);
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
 
-    // Small delay for UX
-    await new Promise((resolve) => setTimeout(resolve, 300));
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Error al guardar');
+      }
 
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+      const data = await response.json();
+      setSettings(data);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+
+      // Apply theme immediately
+      const t = data.theme || settings.theme;
+      const root = document.documentElement;
+      if (t === 'dark') {
+        root.classList.add('dark');
+      } else if (t === 'auto') {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      } else {
+        root.classList.remove('dark');
+      }
+    } catch (error: any) {
+      setSaveError(error.message || 'Error al guardar configuración');
+      setTimeout(() => setSaveError(''), 5000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -108,11 +144,22 @@ export default function SettingsPage() {
       return;
     }
 
+    setPasswordLoading(true);
     try {
-      await apiClient.post('/v1/auth/change-password', {
-        currentPassword: passwordForm.current,
-        newPassword: passwordForm.newPass,
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.newPass,
+        }),
       });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al cambiar la contraseña');
+      }
+
       setPasswordSuccess(true);
       setPasswordForm({ current: '', newPass: '', confirm: '' });
       setTimeout(() => {
@@ -120,7 +167,9 @@ export default function SettingsPage() {
         setPasswordSuccess(false);
       }, 2000);
     } catch (err: any) {
-      setPasswordError(err?.response?.data?.message || 'Error al cambiar la contraseña');
+      setPasswordError(err.message || 'Error al cambiar la contraseña');
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -173,6 +222,18 @@ export default function SettingsPage() {
                   </div>
                 )}
 
+                {saveError && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">
+                    <ExclamationCircleIcon className="h-5 w-5 text-red-600" />
+                    <p className="text-sm text-red-800">{saveError}</p>
+                  </div>
+                )}
+
+                {isLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : (
                 <form onSubmit={handleSaveSettings}>
                   {activeTab === 'profile' && (
                     <div className="space-y-6">
@@ -182,8 +243,8 @@ export default function SettingsPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
                           <input
                             type="text"
-                            value={settings.profile.name}
-                            onChange={(e) => updateProfile('name', e.target.value)}
+                            value={settings.fullName || ''}
+                            onChange={(e) => updateField('fullName', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                             placeholder="Juan Pérez"
                           />
@@ -198,21 +259,11 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Empresa</label>
-                          <input
-                            type="text"
-                            value={settings.profile.company}
-                            onChange={(e) => updateProfile('company', e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            placeholder="Mi Empresa S.A."
-                          />
-                        </div>
-                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
                           <input
                             type="tel"
-                            value={settings.profile.phone}
-                            onChange={(e) => updateProfile('phone', e.target.value)}
+                            value={settings.phone || ''}
+                            onChange={(e) => updateField('phone', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                             placeholder="+1 234 567 8900"
                           />
@@ -225,12 +276,12 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                       <h2 className="text-xl font-bold text-gray-900">Preferencias de Notificaciones</h2>
                       <div className="space-y-4">
-                        {[
-                          { key: 'emailNotifications', title: 'Notificaciones por Email', desc: 'Recibir actualizaciones por correo' },
-                          { key: 'campaignAlerts', title: 'Alertas de Campañas', desc: 'Notificar sobre campañas activas' },
-                          { key: 'weeklyReports', title: 'Reportes Semanales', desc: 'Resumen de actividad cada semana' },
-                          { key: 'socialMentions', title: 'Menciones en Redes', desc: 'Alertas de menciones sociales' },
-                        ].map((item) => (
+                        {([
+                          { key: 'emailNotifications' as const, title: 'Notificaciones por Email', desc: 'Recibir actualizaciones por correo' },
+                          { key: 'campaignAlerts' as const, title: 'Alertas de Campañas', desc: 'Notificar sobre campañas activas' },
+                          { key: 'weeklyReports' as const, title: 'Reportes Semanales', desc: 'Resumen de actividad cada semana' },
+                          { key: 'socialMentions' as const, title: 'Menciones en Redes', desc: 'Alertas de menciones sociales' },
+                        ]).map((item) => (
                           <div key={item.key} className="flex items-center justify-between">
                             <div>
                               <p className="font-medium text-gray-900">{item.title}</p>
@@ -238,14 +289,14 @@ export default function SettingsPage() {
                             </div>
                             <button
                               type="button"
-                              onClick={() => updateNotifications(item.key, !(settings.notifications as any)[item.key])}
+                              onClick={() => updateField(item.key, !settings[item.key])}
                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                (settings.notifications as any)[item.key] ? 'bg-blue-600' : 'bg-gray-200'
+                                settings[item.key] ? 'bg-blue-600' : 'bg-gray-200'
                               }`}
                             >
                               <span
                                 className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                                  (settings.notifications as any)[item.key] ? 'translate-x-6' : 'translate-x-1'
+                                  settings[item.key] ? 'translate-x-6' : 'translate-x-1'
                                 }`}
                               />
                             </button>
@@ -266,14 +317,14 @@ export default function SettingsPage() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => updateSecurity('twoFactorAuth', !settings.security.twoFactorAuth)}
+                            onClick={() => updateField('twoFactorAuth', !settings.twoFactorAuth)}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings.security.twoFactorAuth ? 'bg-blue-600' : 'bg-gray-200'
+                              settings.twoFactorAuth ? 'bg-blue-600' : 'bg-gray-200'
                             }`}
                           >
                             <span
                               className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                                settings.security.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
+                                settings.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
                               }`}
                             />
                           </button>
@@ -282,14 +333,14 @@ export default function SettingsPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Tiempo de Sesión (minutos)</label>
                           <select
-                            value={settings.security.sessionTimeout}
-                            onChange={(e) => updateSecurity('sessionTimeout', e.target.value)}
+                            value={settings.sessionTimeout}
+                            onChange={(e) => updateField('sessionTimeout', parseInt(e.target.value))}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
-                            <option value="15">15 minutos</option>
-                            <option value="30">30 minutos</option>
-                            <option value="60">1 hora</option>
-                            <option value="120">2 horas</option>
+                            <option value={15}>15 minutos</option>
+                            <option value={30}>30 minutos</option>
+                            <option value={60}>1 hora</option>
+                            <option value={120}>2 horas</option>
                           </select>
                         </div>
 
@@ -314,8 +365,8 @@ export default function SettingsPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Tema</label>
                           <select
-                            value={settings.appearance.theme}
-                            onChange={(e) => updateAppearance('theme', e.target.value)}
+                            value={settings.theme}
+                            onChange={(e) => updateField('theme', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="light">Claro</option>
@@ -326,8 +377,8 @@ export default function SettingsPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
                           <select
-                            value={settings.appearance.language}
-                            onChange={(e) => updateAppearance('language', e.target.value)}
+                            value={settings.language}
+                            onChange={(e) => updateField('language', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="es">Español</option>
@@ -339,8 +390,8 @@ export default function SettingsPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Zona Horaria</label>
                           <select
-                            value={settings.appearance.timezone}
-                            onChange={(e) => updateAppearance('timezone', e.target.value)}
+                            value={settings.timezone}
+                            onChange={(e) => updateField('timezone', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="America/Mexico_City">America/Mexico_City (GMT-6)</option>
@@ -348,6 +399,9 @@ export default function SettingsPage() {
                             <option value="America/New_York">America/New_York (GMT-5)</option>
                             <option value="America/Los_Angeles">America/Los_Angeles (GMT-8)</option>
                             <option value="Europe/Madrid">Europe/Madrid (GMT+1)</option>
+                            <option value="America/Lima">America/Lima (GMT-5)</option>
+                            <option value="America/Santiago">America/Santiago (GMT-4)</option>
+                            <option value="America/Buenos_Aires">America/Buenos_Aires (GMT-3)</option>
                           </select>
                         </div>
                       </div>
@@ -358,9 +412,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end space-x-3">
                       <button
                         type="button"
-                        onClick={() => {
-                          if (user?.email) setSettings(loadSettings(user.email));
-                        }}
+                        onClick={() => loadSettings()}
                         className="px-6 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                       >
                         Cancelar
@@ -375,6 +427,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </form>
+                )}
               </div>
             </div>
           </div>
@@ -439,8 +492,12 @@ export default function SettingsPage() {
                       >
                         Cancelar
                       </button>
-                      <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                        Cambiar
+                      <button
+                        type="submit"
+                        disabled={passwordLoading}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {passwordLoading ? 'Cambiando...' : 'Cambiar'}
                       </button>
                     </div>
                   </form>

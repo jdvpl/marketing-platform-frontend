@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { API_CONFIG } from './config';
-import { getCookie, clearAuthCookies, COOKIE_NAMES } from '../cookies';
+import { getCookie, COOKIE_NAMES } from '../cookies';
 
 // Cliente principal de API con interceptores
 class ApiClient {
@@ -31,15 +31,12 @@ class ApiClient {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor - Handle 401
+    // Response interceptor - Handle errors
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          clearAuthCookies();
-          if (this.onUnauthorized) {
-            this.onUnauthorized();
-          }
+        if (error.response?.status === 401 && this.onUnauthorized) {
+          this.onUnauthorized();
         }
         return Promise.reject(error);
       }

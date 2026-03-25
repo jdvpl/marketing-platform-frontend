@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '@/lib/api/client';
 
 interface UploadState {
   isUploading: boolean;
@@ -32,33 +31,39 @@ export const uploadFile = createAsyncThunk<UploadResponse, { file: File; folder?
         formData.append('folder', folder);
       }
 
-      const data = await apiClient.post<UploadResponse>('/v1/storage/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = progressEvent.total
-            ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            : 0;
-          // Progress tracked via Redux state
-        },
+      const response = await fetch('/api/storage/upload', {
+        method: 'POST',
+        body: formData,
       });
 
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(data.error || 'Upload failed');
+      }
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Upload failed');
+    } catch {
+      return rejectWithValue('Upload failed');
     }
   }
 );
 
 export const deleteFile = createAsyncThunk<{ success: boolean }, string>(
   'upload/deleteFile',
-  async (fileUrl: string, { rejectWithValue }) => {
+  async (fileUrl, { rejectWithValue }) => {
     try {
-      const data = await apiClient.post<{ success: boolean }>('/v1/storage/delete', { fileUrl });
+      const response = await fetch('/api/storage/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileUrl }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(data.error || 'Delete failed');
+      }
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Delete failed');
+    } catch {
+      return rejectWithValue('Delete failed');
     }
   }
 );

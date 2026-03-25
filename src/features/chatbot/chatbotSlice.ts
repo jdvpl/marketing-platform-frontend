@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '@/lib/api/client';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -31,29 +30,46 @@ interface ChatResponse {
 
 export const sendMessage = createAsyncThunk<ChatResponse, { message: string; userId: string; conversationId?: string }>(
   'chatbot/sendMessage',
-  async ({ message, userId, conversationId }) => {
-    const data = await apiClient.post<ChatResponse>('/api/chatbot/chat', {
-      message,
-      userId,
-      conversationId,
-    });
-    return data;
+  async ({ message, userId, conversationId }, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/chatbot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, userId, conversationId }),
+      });
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.error || 'Error');
+      return data;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
   }
 );
 
 export const getHistory = createAsyncThunk<ChatMessage[], string>(
   'chatbot/getHistory',
-  async (conversationId: string) => {
-    const data = await apiClient.get<ChatMessage[]>(`/api/chatbot/history/${conversationId}`);
-    return data;
+  async (conversationId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/chatbot/history/${conversationId}`);
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.error || 'Error');
+      return data;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
   }
 );
 
 export const clearConversation = createAsyncThunk(
   'chatbot/clearConversation',
-  async (conversationId: string) => {
-    await apiClient.post(`/api/chatbot/clear/${conversationId}`);
-    return conversationId;
+  async (conversationId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/chatbot/clear/${conversationId}`, { method: 'POST' });
+      if (!response.ok) return rejectWithValue('Error');
+      return conversationId;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
   }
 );
 
@@ -95,7 +111,7 @@ const chatbotSlice = createSlice({
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Error sending message';
+        state.error = action.payload as string || 'Error';
       })
       .addCase(getHistory.fulfilled, (state, action) => {
         state.messages = action.payload;

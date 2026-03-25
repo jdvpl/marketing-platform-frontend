@@ -15,10 +15,10 @@ export const COOKIE_CONFIG = {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
     path: '/',
-    maxAge: 60 * 60, // 1 hora
+    maxAge: 60 * 60 * 24, // 24 horas
   },
   REFRESH_TOKEN: {
-    httpOnly: true, // Más seguro
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
     path: '/',
@@ -29,7 +29,7 @@ export const COOKIE_CONFIG = {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
     path: '/',
-    maxAge: 60 * 60, // 1 hora
+    maxAge: 60 * 60 * 24, // 24 horas
   },
 } as const;
 

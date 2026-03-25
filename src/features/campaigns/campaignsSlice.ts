@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '@/lib/api/client';
 
 interface Campaign {
   id: string;
@@ -22,20 +21,55 @@ const initialState: CampaignsState = {
   error: null,
 };
 
-export const fetchCampaigns = createAsyncThunk<Campaign[], string>('campaigns/fetchAll', async (brandId: string) => {
-  const data = await apiClient.get<Campaign[]>(`/v1/campaigns/brand/${brandId}`);
-  return data;
-});
+export const fetchCampaigns = createAsyncThunk<Campaign[], string>(
+  'campaigns/fetchAll',
+  async (brandId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/campaigns/brand/${brandId}`);
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.error || 'Error al cargar campañas');
+      return data;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
+  }
+);
 
-export const createCampaign = createAsyncThunk<Campaign, Partial<Campaign>>('campaigns/create', async (data: Partial<Campaign>) => {
-  const result = await apiClient.post<Campaign>('/v1/campaigns', data);
-  return result;
-});
+export const createCampaign = createAsyncThunk<Campaign, Partial<Campaign>>(
+  'campaigns/create',
+  async (campaignData, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(campaignData),
+      });
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.error || 'Error al crear campaña');
+      return data;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
+  }
+);
 
-export const deleteCampaign = createAsyncThunk('campaigns/delete', async ({ id, brandId }: { id: string; brandId: string }) => {
-  await apiClient.post(`/v1/campaigns/${id}/delete?brandId=${brandId}`);
-  return id;
-});
+export const deleteCampaign = createAsyncThunk(
+  'campaigns/delete',
+  async ({ id, brandId }: { id: string; brandId: string }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/campaigns/${id}/delete?brandId=${brandId}`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        return rejectWithValue(data.error || 'Error al eliminar');
+      }
+      return id;
+    } catch {
+      return rejectWithValue('Error de conexión');
+    }
+  }
+);
 
 const campaignsSlice = createSlice({
   name: 'campaigns',
@@ -45,6 +79,7 @@ const campaignsSlice = createSlice({
     builder
       .addCase(fetchCampaigns.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(fetchCampaigns.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -52,7 +87,7 @@ const campaignsSlice = createSlice({
       })
       .addCase(fetchCampaigns.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Failed to fetch campaigns';
+        state.error = action.payload as string || 'Error';
       })
       .addCase(createCampaign.fulfilled, (state, action) => {
         state.campaigns.push(action.payload);
