@@ -12,7 +12,7 @@ export async function POST(
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
 
-    const response = await fetch(`${GATEWAY_URL}/v1/payments/subscription/${companyId}/cancel`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/payments/subscription/${companyId}/cancel`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

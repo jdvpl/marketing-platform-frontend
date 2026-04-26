@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { useCompanyBrand } from '@/hooks/useCompanyBrand';
+import { useTranslation } from '@/hooks/useTranslation';
 import { fetchVideos, uploadVideo, clearUploadSuccess } from '@/features/videos/videosSlice';
 import VideoCard from '@/components/videos/VideoCard';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -14,17 +15,18 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-const PROVIDERS = [
-  { value: '', label: 'Todos' },
-  { value: 'META', label: 'Meta' },
-  { value: 'TIKTOK', label: 'TikTok' },
-  { value: 'YOUTUBE', label: 'YouTube' },
-  { value: 'ALL', label: 'Multi-plataforma' },
+const PROVIDER_KEYS: Array<{ value: string; key: string }> = [
+  { value: '', key: 'videos_filter_all' },
+  { value: 'META', key: 'videos_filter_meta' },
+  { value: 'TIKTOK', key: 'videos_filter_tiktok' },
+  { value: 'YOUTUBE', key: 'videos_filter_youtube' },
+  { value: 'ALL', key: 'videos_filter_multi' },
 ];
 
 export default function VideosPage() {
   const dispatch = useAppDispatch();
   const { selectedBrandId, selectedCompanyId } = useCompanyBrand();
+  const { t } = useTranslation();
   const { videos, isLoading, isUploading, error, uploadSuccess } = useAppSelector((s) => s.videos);
 
   const [providerFilter, setProviderFilter] = useState('');
@@ -78,17 +80,15 @@ export default function VideosPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Librería de Videos</h1>
-              <p className="mt-1 text-gray-500">
-                Gestiona y publica tus videos en todas las redes sociales
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('videos_title')}</h1>
+              <p className="mt-1 text-gray-500">{t('videos_desc')}</p>
             </div>
             <button
               onClick={() => setShowUpload(!showUpload)}
               className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <ArrowUpTrayIcon className="h-5 w-5" />
-              Subir Video
+              {t('videos_upload')}
             </button>
           </div>
 
@@ -96,7 +96,7 @@ export default function VideosPage() {
           {showUpload && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold text-gray-900">Subir nuevo video</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('videos_modal_title')}</h2>
                 <button onClick={() => setShowUpload(false)}>
                   <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                 </button>
@@ -105,7 +105,7 @@ export default function VideosPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Archivo de video <span className="text-red-500">*</span>
+                      {t('videos_field_file')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       ref={fileRef}
@@ -114,76 +114,76 @@ export default function VideosPage() {
                       required
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 transition-colors"
                     />
-                    <p className="mt-1 text-xs text-gray-400">MP4, MOV, AVI, WebM, MKV — máx. 4GB</p>
+                    <p className="mt-1 text-xs text-gray-400">{t('videos_field_file_info')}</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Título <span className="text-red-500">*</span>
+                      {t('videos_field_title')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={uploadForm.title}
                       onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      placeholder="Nombre del video"
+                      placeholder={t('videos_field_title_placeholder')}
                       required
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Red objetivo
+                      {t('videos_field_target')}
                     </label>
                     <select
                       value={uploadForm.providerOptimized}
                       onChange={(e) => setUploadForm({ ...uploadForm, providerOptimized: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
-                      <option value="">Sin especificar</option>
-                      <option value="META">Meta (Facebook/Instagram)</option>
-                      <option value="TIKTOK">TikTok</option>
-                      <option value="YOUTUBE">YouTube</option>
-                      <option value="ALL">Todas las redes</option>
+                      <option value="">{t('videos_target_unspecified')}</option>
+                      <option value="META">{t('videos_target_meta')}</option>
+                      <option value="TIKTOK">{t('videos_target_tiktok')}</option>
+                      <option value="YOUTUBE">{t('videos_target_youtube')}</option>
+                      <option value="ALL">{t('videos_target_all')}</option>
                     </select>
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descripción
+                      {t('videos_field_desc')}
                     </label>
                     <textarea
                       value={uploadForm.description}
                       onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      placeholder="Descripción del video (usada como caption al publicar)"
+                      placeholder={t('videos_field_desc_placeholder')}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tags (separados por comas)
+                      {t('videos_field_tags')}
                     </label>
                     <input
                       type="text"
                       value={uploadForm.tags}
                       onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      placeholder="marketing, producto, viral"
+                      placeholder={t('videos_field_tags_placeholder')}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Duración (segundos)
+                      {t('videos_field_duration')}
                     </label>
                     <input
                       type="number"
                       value={uploadForm.durationSeconds}
                       onChange={(e) => setUploadForm({ ...uploadForm, durationSeconds: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      placeholder="60"
+                      placeholder={t('videos_field_duration_placeholder')}
                       min="1"
                     />
                   </div>
@@ -201,14 +201,14 @@ export default function VideosPage() {
                     disabled={isUploading}
                     className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
-                    {isUploading ? 'Subiendo...' : 'Subir Video'}
+                    {isUploading ? t('videos_uploading') : t('videos_upload')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowUpload(false)}
                     className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    Cancelar
+                    {t('videos_cancel')}
                   </button>
                 </div>
               </form>
@@ -218,9 +218,9 @@ export default function VideosPage() {
           {/* Filters */}
           <div className="flex items-center gap-3">
             <FunnelIcon className="h-4 w-4 text-gray-400" />
-            <span className="text-sm text-gray-500">Filtrar por red:</span>
+            <span className="text-sm text-gray-500">{t('videos_filter_label')}</span>
             <div className="flex gap-2">
-              {PROVIDERS.map((p) => (
+              {PROVIDER_KEYS.map((p) => (
                 <button
                   key={p.value}
                   onClick={() => setProviderFilter(p.value)}
@@ -230,11 +230,11 @@ export default function VideosPage() {
                       : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >
-                  {p.label}
+                  {t(p.key)}
                 </button>
               ))}
             </div>
-            <span className="ml-auto text-sm text-gray-400">{videos.length} video(s)</span>
+            <span className="ml-auto text-sm text-gray-400">{videos.length} {t('videos_count_suffix')}</span>
           </div>
 
           {/* Grid */}
@@ -245,16 +245,14 @@ export default function VideosPage() {
           ) : videos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-200">
               <FilmIcon className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Sin videos todavía</h3>
-              <p className="text-gray-500 mb-6 text-sm">
-                Sube tu primer video para publicarlo en todas tus redes sociales
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('videos_no_videos')}</h3>
+              <p className="text-gray-500 mb-6 text-sm">{t('videos_no_videos_desc')}</p>
               <button
                 onClick={() => setShowUpload(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <ArrowUpTrayIcon className="h-5 w-5" />
-                Subir Video
+                {t('videos_upload')}
               </button>
             </div>
           ) : (

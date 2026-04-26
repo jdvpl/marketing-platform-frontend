@@ -31,17 +31,19 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import SubtitlesManager from '@/components/videos/SubtitlesManager';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const TABS = [
-  { id: 'trim', label: 'Recortar', icon: ScissorsIcon },
-  { id: 'ratio', label: 'Formato', icon: ComputerDesktopIcon },
-  { id: 'filters', label: 'Filtros', icon: AdjustmentsHorizontalIcon },
-  { id: 'text', label: 'Texto', icon: ChatBubbleLeftIcon },
-  { id: 'subtitles', label: 'Subtitulos', icon: LanguageIcon },
-  { id: 'export', label: 'Exportar', icon: ArrowDownTrayIcon },
+const TAB_KEYS = [
+  { id: 'trim', labelKey: 'editor_tab_trim', icon: ScissorsIcon },
+  { id: 'ratio', labelKey: 'editor_tab_ratio', icon: ComputerDesktopIcon },
+  { id: 'filters', labelKey: 'editor_tab_filters', icon: AdjustmentsHorizontalIcon },
+  { id: 'text', labelKey: 'editor_tab_text', icon: ChatBubbleLeftIcon },
+  { id: 'subtitles', labelKey: 'editor_tab_subtitles', icon: LanguageIcon },
+  { id: 'export', labelKey: 'editor_tab_export', icon: ArrowDownTrayIcon },
 ];
 
 function VideoEditorContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -135,7 +137,7 @@ function VideoEditorContent() {
       <ProtectedRoute>
         <DashboardLayout>
           <div className="flex items-center justify-center h-96">
-            <p className="text-gray-500">No se especificó un video para editar.</p>
+            <p className="text-gray-500">{t('editor_no_video')}</p>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -156,7 +158,7 @@ function VideoEditorContent() {
                 <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Editor de Video</h1>
+                <h1 className="text-xl font-bold text-gray-900">{t('editor_video_title')}</h1>
                 {video && (
                   <p className="text-sm text-gray-500 truncate max-w-md">{video.title}</p>
                 )}
@@ -202,7 +204,7 @@ function VideoEditorContent() {
               <div className="space-y-4">
                 {/* Tabs */}
                 <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1">
-                  {TABS.map(tab => (
+                  {TAB_KEYS.map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
@@ -213,7 +215,7 @@ function VideoEditorContent() {
                       }`}
                     >
                       <tab.icon className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="hidden sm:inline">{t(tab.labelKey)}</span>
                     </button>
                   ))}
                 </div>

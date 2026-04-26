@@ -14,7 +14,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const days = searchParams.get('days') || '30';
 
-    const response = await fetch(`${GATEWAY_URL}/v1/revenue/brand/${brandId}?days=${days}`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/revenue/brand/${brandId}?days=${days}`, {
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

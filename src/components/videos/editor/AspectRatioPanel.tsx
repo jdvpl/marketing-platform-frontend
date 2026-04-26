@@ -1,6 +1,7 @@
 'use client';
 
 import { DevicePhoneMobileIcon, ComputerDesktopIcon, Square2StackIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AspectRatioPanelProps {
   selectedRatio: string | null;
@@ -15,11 +16,12 @@ const RATIOS = [
 ];
 
 export default function AspectRatioPanel({ selectedRatio, onRatioChange }: AspectRatioPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
         <ComputerDesktopIcon className="h-4 w-4" />
-        <span>Formato de Video</span>
+        <span>{t('editor_panel_format')}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">

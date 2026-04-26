@@ -1,7 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
+export type PlanType = 'FREE' | 'PRO' | 'ENTERPRISE';
+
 export interface Plan {
   id: string;
+  type?: PlanType;
   name: string;
   description: string;
   monthlyPrice: number;

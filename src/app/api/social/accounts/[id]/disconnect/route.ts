@@ -17,7 +17,7 @@ export async function POST(
 
     const { id } = await params;
 
-    const response = await fetch(`${GATEWAY_URL}/v1/social/accounts/${id}/disconnect`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/social/accounts/${id}/disconnect`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

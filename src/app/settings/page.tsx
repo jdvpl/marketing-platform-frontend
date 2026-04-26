@@ -55,6 +55,21 @@ export default function SettingsPage() {
 
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
 
+  // Linked auth methods
+  type LinkedProvider = { provider: string; linkedAt?: string | null; lastUsedAt?: string | null };
+  const [linkedProviders, setLinkedProviders] = useState<LinkedProvider[] | null>(null);
+  const [linkedLoading, setLinkedLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== 'security' || linkedProviders !== null) return;
+    setLinkedLoading(true);
+    fetch('/api/auth/providers')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setLinkedProviders(Array.isArray(data) ? data : []))
+      .catch(() => setLinkedProviders([]))
+      .finally(() => setLinkedLoading(false));
+  }, [activeTab, linkedProviders]);
+
   // Password change
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
@@ -346,6 +361,41 @@ export default function SettingsPage() {
                             <KeyIcon className="h-5 w-5 mr-2" />
                             {t('settings_change_password')}
                           </button>
+                        </div>
+
+                        {/* Linked accounts */}
+                        <div className="pt-4 border-t border-gray-200">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('settings_linked_accounts')}</h3>
+                          <p className="text-xs text-gray-500 mb-3">{t('settings_linked_accounts_desc')}</p>
+                          {linkedLoading || linkedProviders === null ? (
+                            <p className="text-sm text-gray-400">{t('settings_linked_loading')}</p>
+                          ) : linkedProviders.length === 0 ? (
+                            <p className="text-sm text-gray-400">{t('settings_linked_none')}</p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {linkedProviders.map((p) => {
+                                const label = t(`provider_${p.provider}`) || p.provider;
+                                const linkedAt = p.linkedAt ? new Date(p.linkedAt).toLocaleDateString() : '—';
+                                const lastUsed = p.lastUsedAt ? new Date(p.lastUsedAt).toLocaleDateString() : '—';
+                                return (
+                                  <li
+                                    key={p.provider}
+                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                                      <div>
+                                        <p className="text-sm font-medium text-gray-900">{label}</p>
+                                        <p className="text-xs text-gray-500">
+                                          {t('settings_linked_at')}: {linkedAt} · {t('settings_last_used')}: {lastUsed}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
                         </div>
                       </div>
                     </div>

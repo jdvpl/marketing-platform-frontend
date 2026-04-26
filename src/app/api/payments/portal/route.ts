@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const token = cookieStore.get('access_token')?.value;
     const body = await request.json();
 
-    const response = await fetch(`${GATEWAY_URL}/v1/payments/portal`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/payments/portal`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

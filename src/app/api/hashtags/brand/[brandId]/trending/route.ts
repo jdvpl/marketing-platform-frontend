@@ -23,7 +23,7 @@ export async function GET(
 
     const queryString = qs.toString() ? `?${qs.toString()}` : '';
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/hashtags/brand/${brandId}/trending${queryString}`,
+      `${API_GATEWAY_URL}/api/v1/hashtags/brand/${brandId}/trending${queryString}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
 

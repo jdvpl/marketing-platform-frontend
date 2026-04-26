@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/settings`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/settings`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const response = await fetch(`${API_GATEWAY_URL}/v1/settings`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/settings`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

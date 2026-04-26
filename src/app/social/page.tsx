@@ -76,21 +76,21 @@ export default function SocialPage() {
           )}
 
           {/* Tabs */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="grid grid-cols-4 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="grid grid-cols-4 border-b border-gray-200 dark:border-gray-700">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setSelectedTab(tab.id)}
                   className={`flex flex-col items-center py-4 px-2 text-sm font-medium transition-colors ${
                     selectedTab === tab.id
-                      ? 'bg-gradient-to-b from-blue-50 to-white border-b-2 border-blue-600 text-blue-700'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'bg-gradient-to-b from-blue-50 to-white dark:from-blue-950/40 dark:to-gray-800 border-b-2 border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                   }`}
                 >
-                  <tab.icon className={`h-5 w-5 mb-1 ${selectedTab === tab.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <tab.icon className={`h-5 w-5 mb-1 ${selectedTab === tab.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`} />
                   <span className="font-semibold">{tab.label}</span>
-                  <span className="text-xs text-gray-400 hidden sm:block">{tab.description}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">{tab.description}</span>
                 </button>
               ))}
             </div>

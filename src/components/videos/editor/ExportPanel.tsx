@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDownTrayIcon, CameraIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ExportPanelProps {
   outputTitle: string;
@@ -29,11 +30,12 @@ export default function ExportPanel({
   processSuccess,
   error,
 }: ExportPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
         <ArrowDownTrayIcon className="h-4 w-4" />
-        <span>Exportar</span>
+        <span>{t('editor_panel_export')}</span>
       </div>
 
       {/* Title */}
@@ -56,10 +58,10 @@ export default function ExportPanel({
           onChange={e => onProviderChange(e.target.value)}
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="ALL">Todas las plataformas</option>
-          <option value="META">Meta (Facebook/Instagram)</option>
-          <option value="TIKTOK">TikTok</option>
-          <option value="YOUTUBE">YouTube</option>
+          <option value="ALL">{t('social_provider_all')}</option>
+          <option value="META">{t('social_provider_meta')}</option>
+          <option value="TIKTOK">{t('social_provider_tiktok')}</option>
+          <option value="YOUTUBE">{t('social_provider_youtube')}</option>
         </select>
       </div>
 

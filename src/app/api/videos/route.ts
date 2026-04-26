@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams();
     if (provider) params.set('provider', provider);
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/brand/${brandId}?${params}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/brand/${brandId}?${params}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Forward multipart form data directly to the social-service
     const formData = await request.formData();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/upload`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/upload`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${accessToken}` },
       body: formData,

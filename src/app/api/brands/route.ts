@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const companyId = searchParams.get('companyId');
     const qs = companyId ? `?companyId=${companyId}` : '';
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/brands${qs}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/brands${qs}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const response = await fetch(`${API_GATEWAY_URL}/v1/brands`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/brands`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

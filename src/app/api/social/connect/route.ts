@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Construir URL de OAuth basado en el proveedor
     const providerLower = provider.toLowerCase();
-    const oauthUrl = `${API_GATEWAY_URL}/v1/social/oauth/${providerLower}/connect?brandId=${brandId}`;
+    const oauthUrl = `${API_GATEWAY_URL}/api/v1/social/oauth/${providerLower}/connect?brandId=${brandId}`;
 
     // Retornar la URL para que el cliente haga el redirect
     return NextResponse.json({ oauthUrl });

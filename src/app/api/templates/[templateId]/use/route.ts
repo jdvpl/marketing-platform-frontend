@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/templates/${templateId}/use`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/templates/${templateId}/use`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });

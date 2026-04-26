@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { useCompanyBrand } from '@/hooks/useCompanyBrand';
-import { fetchCalendarPosts, ScheduledPost } from '@/features/social/socialSlice';
+import { fetchCalendarPosts } from '@/features/social/socialSlice';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
 import DayDetail from '@/components/calendar/DayDetail';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   CalendarDaysIcon,
   ChevronLeftIcon,
@@ -16,14 +17,16 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+const MONTH_KEYS = [
+  'calendar_month_jan', 'calendar_month_feb', 'calendar_month_mar', 'calendar_month_apr',
+  'calendar_month_may', 'calendar_month_jun', 'calendar_month_jul', 'calendar_month_aug',
+  'calendar_month_sep', 'calendar_month_oct', 'calendar_month_nov', 'calendar_month_dec',
 ];
 
 export default function CalendarPage() {
   const dispatch = useAppDispatch();
   const { selectedBrandId } = useCompanyBrand();
+  const { t } = useTranslation();
   const { calendarPosts, isLoadingCalendar } = useAppSelector(s => s.social);
 
   const today = new Date();
@@ -76,7 +79,7 @@ export default function CalendarPage() {
   }, []);
 
   const handleCancelPost = useCallback(async (postId: string) => {
-    if (!confirm('¿Cancelar esta publicación programada?')) return;
+    if (!confirm(t('calendar_cancel_confirm'))) return;
     try {
       await fetch(`/api/social/schedule/${postId}/cancel`, { method: 'POST' });
       // Refresh calendar
@@ -124,8 +127,8 @@ export default function CalendarPage() {
             <div className="flex items-center gap-3">
               <CalendarDaysIcon className="h-7 w-7 text-blue-600" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Calendario de Contenido</h1>
-                <p className="text-sm text-gray-500">Planifica y visualiza todas tus publicaciones</p>
+                <h1 className="text-xl font-bold text-gray-900">{t('calendar_title')}</h1>
+                <p className="text-sm text-gray-500">{t('calendar_desc')}</p>
               </div>
             </div>
             <Link
@@ -133,17 +136,17 @@ export default function CalendarPage() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <PlusIcon className="h-4 w-4" />
-              Nueva Publicación
+              {t('calendar_new_post')}
             </Link>
           </div>
 
           {/* Stats bar */}
           <div className="grid grid-cols-4 gap-3 mb-6">
             {[
-              { label: 'Total', value: stats.total, color: 'text-gray-900' },
-              { label: 'Programados', value: stats.scheduled, color: 'text-blue-600' },
-              { label: 'Publicados', value: stats.posted, color: 'text-green-600' },
-              { label: 'Fallidos', value: stats.failed, color: 'text-red-600' },
+              { label: t('calendar_total'), value: stats.total, color: 'text-gray-900' },
+              { label: t('calendar_scheduled'), value: stats.scheduled, color: 'text-blue-600' },
+              { label: t('calendar_published'), value: stats.posted, color: 'text-green-600' },
+              { label: t('calendar_failed'), value: stats.failed, color: 'text-red-600' },
             ].map(stat => (
               <div key={stat.label} className="bg-white border border-gray-200 rounded-lg px-4 py-3">
                 <div className={`text-lg font-bold ${stat.color}`}>{stat.value}</div>
@@ -162,7 +165,7 @@ export default function CalendarPage() {
                 <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
               </button>
               <h2 className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
-                {MONTH_NAMES[month]} {year}
+                {t(MONTH_KEYS[month])} {year}
               </h2>
               <button
                 onClick={goToNextMonth}
@@ -176,7 +179,7 @@ export default function CalendarPage() {
               onClick={goToToday}
               className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
             >
-              Hoy
+              {t('calendar_today')}
             </button>
           </div>
 
@@ -208,9 +211,7 @@ export default function CalendarPage() {
               ) : (
                 <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
                   <CalendarDaysIcon className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">
-                    Selecciona un día para ver las publicaciones programadas
-                  </p>
+                  <p className="text-sm text-gray-400">{t('calendar_select_day')}</p>
                 </div>
               )}
             </div>

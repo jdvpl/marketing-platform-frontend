@@ -4,10 +4,12 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { login } from '@/features/auth/authSlice';
+import { useTranslation } from '@/hooks/useTranslation';
 import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,20 +27,20 @@ export default function LoginPage() {
     setValidationError('');
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
-      setValidationError('El correo es obligatorio');
+      setValidationError(t('login_err_email_required'));
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      setValidationError('Ingresa un correo electrónico válido');
+      setValidationError(t('login_err_email_invalid'));
       return false;
     }
     if (!password) {
-      setValidationError('La contraseña es obligatoria');
+      setValidationError(t('login_err_password_required'));
       return false;
     }
     if (password.length < 6) {
-      setValidationError('La contraseña debe tener al menos 6 caracteres');
+      setValidationError(t('login_err_password_min'));
       return false;
     }
     return true;
@@ -58,7 +60,7 @@ export default function LoginPage() {
   const handleSocialLogin = (provider: string) => {
     // OAuth a través del API Gateway
     const apiGatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:5000';
-    window.location.href = `${apiGatewayUrl}/v1/auth/oauth/${provider}/connect`;
+    window.location.href = `${apiGatewayUrl}/api/v1/auth/oauth/${provider}/connect`;
   };
 
   return (
@@ -67,7 +69,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <img src="/assets/icon.png" alt="ContenixIA" className="w-14 h-14 rounded-xl mx-auto mb-3" />
           <h1 className="text-3xl font-bold text-gray-900">Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span></h1>
-          <p className="text-gray-500 mt-2">Inicia sesion en tu cuenta</p>
+          <p className="text-gray-500 mt-2">{t('login_subtitle')}</p>
         </div>
 
         {(error || validationError) && (
@@ -79,13 +81,13 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              {t('login_email')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t('login_email_placeholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
               required
             />
@@ -93,7 +95,7 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              {t('login_password')}
             </label>
             <div className="relative">
               <input
@@ -123,7 +125,7 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium"
           >
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {isLoading ? t('login_submitting') : t('login_submit')}
           </button>
         </form>
 
@@ -133,7 +135,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">O continúa con</span>
+              <span className="px-2 bg-white text-gray-500">{t('login_or')}</span>
             </div>
           </div>
 
@@ -198,9 +200,9 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-600">
-          ¿No tienes una cuenta?{' '}
+          {t('login_no_account')}{' '}
           <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-            Regístrate
+            {t('login_signup_link')}
           </Link>
         </p>
       </div>

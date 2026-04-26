@@ -8,8 +8,10 @@ import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,12 +26,12 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      showToast('Las contraseñas no coinciden');
+      showToast(t('register_err_no_match') || 'Passwords do not match');
       return;
     }
 
     if (password.length < 8) {
-      showToast('La contraseña debe tener al menos 8 caracteres');
+      showToast(t('register_err_min_8') || 'Password must be at least 8 characters');
       return;
     }
 
@@ -49,7 +51,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <img src="/assets/icon.png" alt="ContenixIA" className="w-14 h-14 rounded-xl mx-auto mb-3" />
           <h1 className="text-3xl font-bold text-gray-900">Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span></h1>
-          <p className="text-gray-500 mt-2">Crea tu cuenta</p>
+          <p className="text-gray-500 mt-2">{t('register_subtitle')}</p>
         </div>
 
         {error && (
@@ -61,13 +63,13 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              {t('login_email')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t('login_email_placeholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-400"
               required
             />
@@ -75,7 +77,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
+              {t('login_password')}
             </label>
             <div className="relative">
               <input
@@ -99,12 +101,12 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Mínimo 8 caracteres</p>
+            <p className="text-xs text-gray-500 mt-1">{t('register_password_min')}</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar Contraseña
+              {t('register_password_confirm')}
             </label>
             <div className="relative">
               <input
@@ -135,14 +137,14 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 transition font-medium"
           >
-            {isLoading ? 'Creando cuenta...' : 'Registrarse'}
+            {isLoading ? t('register_submitting') : t('register_submit')}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          ¿Ya tienes una cuenta?{' '}
+          {t('register_have_account')}{' '}
           <Link href="/login" className="text-purple-600 hover:text-purple-700 font-medium">
-            Inicia sesión
+            {t('register_signin_link')}
           </Link>
         </p>
       </div>

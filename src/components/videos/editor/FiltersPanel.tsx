@@ -2,6 +2,7 @@
 
 import { AdjustmentsHorizontalIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { FilterState } from '@/hooks/useVideoEditor';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FiltersPanelProps {
   filters: FilterState;
@@ -27,12 +28,13 @@ const SLIDERS: SliderConfig[] = [
 ];
 
 export default function FiltersPanel({ filters, onFilterChange, onReset }: FiltersPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <AdjustmentsHorizontalIcon className="h-4 w-4" />
-          <span>Filtros</span>
+          <span>{t('editor_panel_filters')}</span>
         </div>
         <button
           onClick={onReset}

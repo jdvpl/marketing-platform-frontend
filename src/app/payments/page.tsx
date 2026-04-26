@@ -113,6 +113,26 @@ export default function PaymentsPage() {
   const formatPrice = (plan: Plan) =>
     billingInterval === 'month' ? plan.monthlyPrice : Math.round(plan.yearlyPrice / 12);
 
+  // Translate plan name/description/features by plan.type, with fallback to backend value.
+  const getPlanName = (plan: Plan) => {
+    if (!plan.type) return plan.name;
+    const key = `plan_${plan.type.toLowerCase()}_name` as const;
+    return t(key) || plan.name;
+  };
+  const getPlanDesc = (plan: Plan) => {
+    if (!plan.type) return plan.description;
+    const key = `plan_${plan.type.toLowerCase()}_desc` as const;
+    return t(key) || plan.description;
+  };
+  const getPlanFeatures = (plan: Plan): string[] => {
+    if (plan.type) {
+      const key = `plan_${plan.type.toLowerCase()}_features` as const;
+      const raw = t(key);
+      if (raw) return raw.split('|').map(s => s.trim()).filter(Boolean);
+    }
+    return plan.features || [];
+  };
+
   const formatDate = (iso?: string) => {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -178,14 +198,14 @@ export default function PaymentsPage() {
 
           {/* Free Plan Banner */}
           {isFreePlan && (
-            <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 border border-amber-200 rounded-2xl p-6">
+            <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/40 dark:via-orange-950/40 dark:to-rose-950/40 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-6">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl">
                   <GiftIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{t('payments_free_plan')}</h3>
-                  <p className="text-sm text-gray-600 mb-4">{t('payments_free_plan_desc')}</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-amber-50 mb-1">{t('payments_free_plan')}</h3>
+                  <p className="text-sm text-gray-600 dark:text-amber-100/80 mb-4">{t('payments_free_plan_desc')}</p>
                   <div className="grid grid-cols-3 gap-4">
                     <UsageMeter label={t('payments_usage_brands')} current={0} limit={1} />
                     <UsageMeter label={t('payments_usage_posts')} current={0} limit={3} />
@@ -296,8 +316,8 @@ export default function PaymentsPage() {
                       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${PLAN_COLORS[idx] || 'from-gray-400 to-gray-600'} flex items-center justify-center mb-4`}>
                         {isFree ? <GiftIcon className="h-5 w-5 text-white" /> : <CreditCardIcon className="h-5 w-5 text-white" />}
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1 mb-4">{plan.description}</p>
+                      <h3 className="text-xl font-bold text-gray-900">{getPlanName(plan)}</h3>
+                      <p className="text-sm text-gray-500 mt-1 mb-4">{getPlanDesc(plan)}</p>
                       <div className="mb-6">
                         {isFree ? (
                           <span className="text-4xl font-extrabold text-gray-900">{t('payments_free_price')}</span>
@@ -314,7 +334,7 @@ export default function PaymentsPage() {
                         )}
                       </div>
                       <ul className="space-y-3 mb-8 flex-1">
-                        {(plan.features || []).map((f, i) => (
+                        {getPlanFeatures(plan).map((f, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                             <CheckBadgeIcon className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                             {f}
@@ -411,16 +431,10 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('payments_faq_title')}</h2>
             <div className="space-y-4">
-              {[
-                { q: '¿Puedo cambiar de plan en cualquier momento?', a: 'Sí, puedes actualizar o degradar tu plan desde el portal de facturación. Los cambios se reflejan de inmediato.' },
-                { q: '¿Ofrecen descuento por pago anual?', a: 'Sí, obtienes un 20% de descuento al elegir facturación anual en cualquier plan.' },
-                { q: '¿Hay período de prueba gratuito?', a: '14 días de prueba gratuita en todos los planes. Sin tarjeta de crédito requerida.' },
-                { q: '¿Cómo cancelo mi suscripción?', a: 'Puedes cancelar en cualquier momento desde el portal de facturación. Seguirás teniendo acceso hasta el final del período pagado.' },
-                { q: '¿Qué incluye el plan gratuito?', a: 'El plan gratuito incluye 1 marca, 3 publicaciones diarias y 10 generaciones de IA al mes. Perfecto para empezar.' },
-              ].map((faq) => (
-                <div key={faq.q} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                  <p className="font-medium text-gray-900 mb-1">{faq.q}</p>
-                  <p className="text-sm text-gray-600">{faq.a}</p>
+              {([1, 2, 3, 4, 5] as const).map((n) => (
+                <div key={n} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                  <p className="font-medium text-gray-900 mb-1">{t(`payments_faq_q${n}` as const)}</p>
+                  <p className="text-sm text-gray-600">{t(`payments_faq_a${n}` as const)}</p>
                 </div>
               ))}
             </div>

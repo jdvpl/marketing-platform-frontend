@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const brandId = request.nextUrl.searchParams.get('brandId');
-    const response = await fetch(`${API_GATEWAY_URL}/v1/campaigns/${campaignId}/delete?brandId=${brandId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/campaigns/${campaignId}/delete?brandId=${brandId}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

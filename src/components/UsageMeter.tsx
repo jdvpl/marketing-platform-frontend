@@ -14,12 +14,12 @@ export default function UsageMeter({ label, current, limit }: UsageMeterProps) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-gray-600">{label}</span>
-        <span className={`font-semibold ${isAtLimit ? 'text-red-600' : isNearLimit ? 'text-amber-600' : 'text-gray-700'}`}>
+        <span className="text-gray-600 dark:text-amber-100/80">{label}</span>
+        <span className={`font-semibold ${isAtLimit ? 'text-red-600 dark:text-red-400' : isNearLimit ? 'text-amber-600 dark:text-amber-300' : 'text-gray-700 dark:text-amber-50'}`}>
           {current}/{limit}
         </span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-1.5">
+      <div className="w-full bg-amber-200/60 dark:bg-amber-900/40 rounded-full h-1.5">
         <div
           className={`h-1.5 rounded-full transition-all ${
             isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-500' : 'bg-blue-500'

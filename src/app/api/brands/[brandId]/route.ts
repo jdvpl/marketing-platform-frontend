@@ -14,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/brands/${brandId}/delete`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/brands/${brandId}/delete`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

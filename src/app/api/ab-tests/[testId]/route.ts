@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/ab-tests/${testId}`,
+      `${API_GATEWAY_URL}/api/v1/ab-tests/${testId}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
 

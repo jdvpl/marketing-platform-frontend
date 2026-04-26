@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const publishData = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/social/publish`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/social/publish`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

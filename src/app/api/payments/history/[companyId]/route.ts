@@ -12,7 +12,7 @@ export async function GET(
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
 
-    const response = await fetch(`${GATEWAY_URL}/v1/payments/history/${companyId}`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/payments/history/${companyId}`, {
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

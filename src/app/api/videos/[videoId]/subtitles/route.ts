@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}/subtitles`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/${videoId}/subtitles`, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
@@ -42,7 +42,7 @@ export async function POST(
 
     const body = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}/subtitles`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/${videoId}/subtitles`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

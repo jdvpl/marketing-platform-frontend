@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const { prompt, contentType, tone, language, brandId } = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/ai/generate`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/ai/generate`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

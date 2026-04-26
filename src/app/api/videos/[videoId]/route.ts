@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/${videoId}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
@@ -39,7 +39,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/videos/${videoId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/videos/${videoId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });

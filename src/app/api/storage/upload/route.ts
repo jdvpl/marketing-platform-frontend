@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/storage/upload`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/storage/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

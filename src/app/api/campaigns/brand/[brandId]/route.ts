@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/campaigns/brand/${brandId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/campaigns/brand/${brandId}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',

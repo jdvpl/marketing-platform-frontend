@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/templates/${templateId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/templates/${templateId}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
@@ -41,7 +41,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/templates/${templateId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/templates/${templateId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -71,7 +71,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/templates/${templateId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/templates/${templateId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });

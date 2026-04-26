@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { useCompanyBrand } from '@/hooks/useCompanyBrand';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   fetchBrandTemplates,
   createTemplate,
@@ -26,22 +27,22 @@ import {
   PlayIcon,
   PhotoIcon,
   VideoCameraIcon,
-  MusicalNoteIcon,
   DocumentTextIcon,
-  EyeIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 
-const CATEGORIES = [
-  { value: '', label: 'Todos' },
-  { value: 'General', label: 'General' },
-  { value: 'Promo', label: 'Promo' },
-  { value: 'Educativo', label: 'Educativo' },
-  { value: 'Entretenimiento', label: 'Entretenimiento' },
-  { value: 'Behind Scenes', label: 'Behind Scenes' },
-  { value: 'UGC', label: 'UGC' },
-  { value: 'Anuncio', label: 'Anuncio' },
-];
+const CATEGORY_VALUES = ['General', 'Promo', 'Educativo', 'Entretenimiento', 'Behind Scenes', 'UGC', 'Anuncio'] as const;
+type CategoryValue = typeof CATEGORY_VALUES[number];
+
+const CATEGORY_KEY: Record<CategoryValue, string> = {
+  General: 'templates_cat_general',
+  Promo: 'templates_cat_promo',
+  Educativo: 'templates_cat_education',
+  Entretenimiento: 'templates_cat_entertainment',
+  'Behind Scenes': 'templates_cat_behind',
+  UGC: 'templates_cat_ugc',
+  Anuncio: 'templates_cat_ad',
+};
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   General: { bg: 'bg-gray-100', text: 'text-gray-700' },
@@ -86,6 +87,7 @@ function CreateEditModal({
   isSubmitting: boolean;
   onSubmit: (body: Record<string, unknown>) => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
   const [category, setCategory] = useState(template?.category || 'General');
@@ -118,7 +120,7 @@ function CreateEditModal({
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            {isEditing ? 'Editar Template' : 'Nuevo Template'}
+            {isEditing ? t('templates_edit') : t('templates_new')}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <XMarkIcon className="h-5 w-5" />
@@ -126,94 +128,86 @@ function CreateEditModal({
         </div>
 
         <div className="px-6 py-4 space-y-4">
-          {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_name')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Post promocional de producto"
+              placeholder={t('templates_field_name_placeholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{"Descripci\u00f3n (opcional)"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_desc')}</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe para que sirve este template"
+              placeholder={t('templates_field_desc_placeholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{"Categor\u00eda"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_category')}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              {CATEGORIES.filter((c) => c.value !== '').map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              {CATEGORY_VALUES.map((c) => (
+                <option key={c} value={c}>{t(CATEGORY_KEY[c])}</option>
               ))}
             </select>
           </div>
 
-          {/* Content Template */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contenido del template</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_content')}</label>
             <textarea
               value={contentTemplate}
               onChange={(e) => setContentTemplate(e.target.value)}
-              placeholder={"Escribe tu template aqu\u00ed...\nUsa variables como {{producto}}, {{marca}}, {{precio}}, {{beneficio}}"}
+              placeholder={t('templates_field_content_placeholder')}
               rows={6}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono"
             />
-            <p className="text-xs text-gray-400 mt-1">
-              {"Variables disponibles: {{producto}}, {{marca}}, {{precio}}, {{beneficio}}, {{fecha}}, {{link}}"}
-            </p>
+            <p className="text-xs text-gray-400 mt-1">{t('templates_field_variables')}</p>
           </div>
 
-          {/* Hashtags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hashtags (opcional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_hashtags')}</label>
             <input
               type="text"
               value={hashtags}
               onChange={(e) => setHashtags(e.target.value)}
-              placeholder="#marketing #contenido #social"
+              placeholder={t('templates_field_hashtags_placeholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Provider + Media Type row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Red social (opcional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_provider')}</label>
               <select
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">Todas</option>
+                <option value="">{t('templates_filter_all_networks')}</option>
                 {PROVIDERS.filter((p) => p !== '').map((p) => (
                   <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de media (opcional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('templates_field_media')}</label>
               <select
                 value={mediaType}
                 onChange={(e) => setMediaType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">Sin especificar</option>
+                <option value="">{t('templates_field_media_unspecified')}</option>
                 {MEDIA_TYPES.filter((m) => m !== '').map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
@@ -227,7 +221,7 @@ function CreateEditModal({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Cancelar
+            {t('templates_cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -239,7 +233,7 @@ function CreateEditModal({
             ) : (
               <PlusIcon className="h-4 w-4" />
             )}
-            {isEditing ? 'Guardar cambios' : 'Crear Template'}
+            {isEditing ? t('templates_save_changes') : t('templates_create')}
           </button>
         </div>
       </div>
@@ -262,11 +256,15 @@ function TemplateDetailModal({
   onDelete: () => void;
   isLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const categoryColor = CATEGORY_COLORS[template.category] || CATEGORY_COLORS.General;
   const MediaIcon = getMediaTypeIcon(template.mediaType);
   const hashtagList = template.hashtags
     ? template.hashtags.split(/\s+/).filter((h) => h.startsWith('#'))
     : [];
+  const categoryLabel = CATEGORY_KEY[template.category as CategoryValue]
+    ? t(CATEGORY_KEY[template.category as CategoryValue])
+    : template.category;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -276,7 +274,7 @@ function TemplateDetailModal({
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-gray-900">{template.name}</h2>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${categoryColor.bg} ${categoryColor.text}`}>
-              {template.category}
+              {categoryLabel}
             </span>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -289,7 +287,6 @@ function TemplateDetailModal({
             <p className="text-sm text-gray-500">{template.description}</p>
           )}
 
-          {/* Metadata */}
           <div className="flex items-center gap-3 flex-wrap">
             {template.provider && (
               <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
@@ -304,22 +301,20 @@ function TemplateDetailModal({
             )}
             <span className="flex items-center gap-1 text-[10px] text-gray-400">
               <ChartBarIcon className="h-3 w-3" />
-              {template.usageCount} usos
+              {template.usageCount} {t('templates_uses')}
             </span>
           </div>
 
-          {/* Content */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <label className="block text-xs font-medium text-gray-500 mb-2">Contenido</label>
+            <label className="block text-xs font-medium text-gray-500 mb-2">{t('templates_content_label')}</label>
             <p className="text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
               {template.contentTemplate}
             </p>
           </div>
 
-          {/* Hashtags */}
           {hashtagList.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">Hashtags</label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">{t('templates_hashtags_label')}</label>
               <div className="flex flex-wrap gap-1.5">
                 {hashtagList.map((tag, idx) => (
                   <span
@@ -334,7 +329,7 @@ function TemplateDetailModal({
           )}
 
           <div className="text-xs text-gray-400">
-            Creado: {new Date(template.createdAt).toLocaleDateString()}
+            {t('templates_created_label')} {new Date(template.createdAt).toLocaleDateString()}
           </div>
         </div>
 
@@ -345,7 +340,7 @@ function TemplateDetailModal({
             className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50 transition-colors flex items-center gap-1.5"
           >
             <TrashIcon className="h-4 w-4" />
-            Eliminar
+            {t('templates_action_delete')}
           </button>
           <div className="flex items-center gap-2">
             <button
@@ -353,7 +348,7 @@ function TemplateDetailModal({
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1.5"
             >
               <PencilIcon className="h-4 w-4" />
-              Editar
+              {t('templates_action_edit')}
             </button>
             <button
               onClick={onUse}
@@ -361,7 +356,7 @@ function TemplateDetailModal({
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
             >
               <ClipboardDocumentIcon className="h-4 w-4" />
-              Usar Template
+              {t('templates_use_btn')}
             </button>
           </div>
         </div>
@@ -373,6 +368,7 @@ function TemplateDetailModal({
 export default function TemplatesPage() {
   const dispatch = useAppDispatch();
   const { selectedBrandId } = useCompanyBrand();
+  const { t } = useTranslation();
   const { templates, currentTemplate, isLoading, isCreating, error } = useAppSelector((s) => s.templates);
 
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -411,7 +407,7 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = (templateId: string) => {
-    if (!confirm('Estas seguro de que deseas eliminar este template?')) return;
+    if (!confirm(t('templates_delete_confirm'))) return;
     dispatch(deleteTemplate(templateId)).then((action) => {
       if (deleteTemplate.fulfilled.match(action)) {
         setShowDetailModal(false);
@@ -446,9 +442,7 @@ export default function TemplatesPage() {
     setShowEditModal(true);
   };
 
-  const filteredTemplates = useMemo(() => {
-    return templates;
-  }, [templates]);
+  const filteredTemplates = useMemo(() => templates, [templates]);
 
   return (
     <ProtectedRoute>
@@ -459,8 +453,8 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-3">
               <DocumentDuplicateIcon className="h-7 w-7 text-blue-600" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Templates de Contenido</h1>
-                <p className="text-sm text-gray-500">Crea y reutiliza plantillas para tus publicaciones</p>
+                <h1 className="text-xl font-bold text-gray-900">{t('templates_title')}</h1>
+                <p className="text-sm text-gray-500">{t('templates_subtitle')}</p>
               </div>
             </div>
             <button
@@ -468,36 +462,45 @@ export default function TemplatesPage() {
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
             >
               <PlusIcon className="h-4 w-4" />
-              Nuevo Template
+              {t('templates_new')}
             </button>
           </div>
 
           {/* Filters */}
           <div className="flex items-center gap-4 mb-6 flex-wrap">
-            {/* Category pills */}
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 flex-wrap">
-              {CATEGORIES.map((cat) => (
+              <button
+                key="__all__"
+                onClick={() => setCategoryFilter('')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  categoryFilter === ''
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('templates_filter_all')}
+              </button>
+              {CATEGORY_VALUES.map((cat) => (
                 <button
-                  key={cat.value}
-                  onClick={() => setCategoryFilter(cat.value)}
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    categoryFilter === cat.value
+                    categoryFilter === cat
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  {cat.label}
+                  {t(CATEGORY_KEY[cat])}
                 </button>
               ))}
             </div>
 
-            {/* Provider dropdown */}
             <select
               value={providerFilter}
               onChange={(e) => setProviderFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="">Todas las redes</option>
+              <option value="">{t('templates_filter_all_networks')}</option>
               {PROVIDERS.filter((p) => p !== '').map((p) => (
                 <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
               ))}
@@ -522,16 +525,14 @@ export default function TemplatesPage() {
           ) : filteredTemplates.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
               <DocumentDuplicateIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <h3 className="text-sm font-medium text-gray-900 mb-1">{"No hay templates a\u00fan"}</h3>
-              <p className="text-xs text-gray-500 mb-4">
-                Crea tu primer template para agilizar la creacion de contenido.
-              </p>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">{t('templates_empty_title')}</h3>
+              <p className="text-xs text-gray-500 mb-4">{t('templates_empty_desc')}</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
               >
                 <PlusIcon className="h-4 w-4" />
-                Crear Template
+                {t('templates_create')}
               </button>
             </div>
           ) : (
@@ -543,13 +544,15 @@ export default function TemplatesPage() {
                   ? template.hashtags.split(/\s+/).filter((h) => h.startsWith('#')).slice(0, 4)
                   : [];
                 const isCopied = copiedId === template.id;
+                const categoryLabel = CATEGORY_KEY[template.category as CategoryValue]
+                  ? t(CATEGORY_KEY[template.category as CategoryValue])
+                  : template.category;
 
                 return (
                   <div
                     key={template.id}
                     className="bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition-all"
                   >
-                    {/* Card header */}
                     <div className="flex items-start justify-between mb-2">
                       <h3
                         className="text-sm font-semibold text-gray-900 line-clamp-1 flex-1 mr-2 cursor-pointer hover:text-blue-600"
@@ -558,11 +561,10 @@ export default function TemplatesPage() {
                         {template.name}
                       </h3>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${categoryColor.bg} ${categoryColor.text}`}>
-                        {template.category}
+                        {categoryLabel}
                       </span>
                     </div>
 
-                    {/* Provider badge */}
                     <div className="flex items-center gap-2 mb-2">
                       {template.provider && (
                         <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
@@ -577,7 +579,6 @@ export default function TemplatesPage() {
                       )}
                     </div>
 
-                    {/* Content preview */}
                     <p
                       className="text-xs text-gray-600 mb-3 line-clamp-3 whitespace-pre-wrap cursor-pointer"
                       onClick={() => handleOpenDetail(template)}
@@ -585,7 +586,6 @@ export default function TemplatesPage() {
                       {template.contentTemplate}
                     </p>
 
-                    {/* Hashtags */}
                     {hashtagList.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {hashtagList.map((tag, idx) => (
@@ -599,35 +599,33 @@ export default function TemplatesPage() {
                       </div>
                     )}
 
-                    {/* Usage count */}
                     <div className="flex items-center gap-2 mb-3 text-[10px] text-gray-400">
                       <span className="flex items-center gap-1">
                         <ChartBarIcon className="h-3 w-3" />
-                        {template.usageCount} usos
+                        {template.usageCount} {t('templates_uses')}
                       </span>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleOpenEdit(template)}
                           className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                          title="Editar"
+                          title={t('templates_action_edit')}
                         >
                           <PencilIcon className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleCopyContent(template)}
                           className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                          title="Copiar contenido"
+                          title={t('templates_action_copy')}
                         >
                           <ClipboardDocumentIcon className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(template.id)}
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                          title="Eliminar"
+                          title={t('templates_action_delete')}
                         >
                           <TrashIcon className="h-3.5 w-3.5" />
                         </button>
@@ -640,12 +638,10 @@ export default function TemplatesPage() {
                             : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
                         }`}
                       >
-                        {isCopied ? (
-                          <>Copiado!</>
-                        ) : (
+                        {isCopied ? t('templates_copied') : (
                           <>
                             <PlayIcon className="h-3.5 w-3.5" />
-                            Usar
+                            {t('templates_use')}
                           </>
                         )}
                       </button>
@@ -656,7 +652,7 @@ export default function TemplatesPage() {
             </div>
           )}
 
-          {/* Create Modal */}
+          {/* Modals */}
           {showCreateModal && selectedBrandId && (
             <CreateEditModal
               brandId={selectedBrandId}
@@ -666,7 +662,6 @@ export default function TemplatesPage() {
             />
           )}
 
-          {/* Edit Modal */}
           {showEditModal && selectedBrandId && currentTemplate && (
             <CreateEditModal
               brandId={selectedBrandId}
@@ -677,7 +672,6 @@ export default function TemplatesPage() {
             />
           )}
 
-          {/* Detail Modal */}
           {showDetailModal && currentTemplate && (
             <TemplateDetailModal
               template={currentTemplate}

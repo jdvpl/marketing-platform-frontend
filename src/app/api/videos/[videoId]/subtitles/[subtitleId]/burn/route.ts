@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/videos/${videoId}/subtitles/${subtitleId}/burn`,
+      `${API_GATEWAY_URL}/api/v1/videos/${videoId}/subtitles/${subtitleId}/burn`,
       {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${accessToken}` },

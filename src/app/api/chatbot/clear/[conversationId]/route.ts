@@ -4,33 +4,31 @@ import { getAccessToken } from '@/lib/auth';
 const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:5000';
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ testId: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const { testId } = await params;
     const accessToken = await getAccessToken();
     if (!accessToken) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
+    const { conversationId } = await params;
+
     const response = await fetch(
-      `${API_GATEWAY_URL}/api/v1/ab-tests/${testId}/complete`,
+      `${API_GATEWAY_URL}/api/v1/chatbot/clear/${conversationId}`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${accessToken}` },
       }
     );
 
-    const data = await response.json();
     if (!response.ok) {
-      return NextResponse.json({ error: data.error || 'Error al completar test A/B' }, { status: response.status });
+      const data = await response.json().catch(() => ({}));
+      return NextResponse.json({ error: data.error || 'Error limpiando conversación' }, { status: response.status });
     }
-    return NextResponse.json(data);
-  } catch (error) {
+    return NextResponse.json({ success: true });
+  } catch {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

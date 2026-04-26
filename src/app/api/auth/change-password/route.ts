@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const response = await fetch(`${API_GATEWAY_URL}/v1/auth/change-password`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/auth/change-password`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

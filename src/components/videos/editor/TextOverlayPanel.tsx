@@ -2,6 +2,7 @@
 
 import { PlusIcon, TrashIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { TextOverlayState } from '@/hooks/useVideoEditor';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TextOverlayPanelProps {
   overlays: TextOverlayState[];
@@ -12,6 +13,7 @@ interface TextOverlayPanelProps {
 }
 
 export default function TextOverlayPanel({ overlays, onAdd, onUpdate, onRemove, duration }: TextOverlayPanelProps) {
+  const { t } = useTranslation();
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
@@ -23,7 +25,7 @@ export default function TextOverlayPanel({ overlays, onAdd, onUpdate, onRemove, 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <ChatBubbleLeftIcon className="h-4 w-4" />
-          <span>Texto</span>
+          <span>{t('editor_panel_text')}</span>
         </div>
         <button
           onClick={onAdd}
@@ -71,9 +73,9 @@ export default function TextOverlayPanel({ overlays, onAdd, onUpdate, onRemove, 
                   onChange={e => onUpdate(overlay.id, { position: e.target.value as 'top' | 'center' | 'bottom' })}
                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded-md"
                 >
-                  <option value="top">Arriba</option>
-                  <option value="center">Centro</option>
-                  <option value="bottom">Abajo</option>
+                  <option value="top">{t('editor_position_top')}</option>
+                  <option value="center">{t('editor_position_center')}</option>
+                  <option value="bottom">{t('editor_position_bottom')}</option>
                 </select>
               </div>
               <div>

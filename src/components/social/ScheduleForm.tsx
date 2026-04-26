@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { useCompanyBrand } from '@/hooks/useCompanyBrand';
+import { useTranslation } from '@/hooks/useTranslation';
 import { fetchCampaigns } from '@/features/campaigns/campaignsSlice';
 import { schedulePost } from '@/features/social/socialSlice';
 
@@ -13,6 +14,7 @@ interface ScheduleFormProps {
 
 export default function ScheduleForm({ campaignId: initialCampaignId, onSuccess }: ScheduleFormProps) {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const { selectedBrandId } = useCompanyBrand();
   const { isScheduling, error } = useAppSelector((state) => state.social);
   const { campaigns } = useAppSelector((state) => state.campaigns);
@@ -91,7 +93,7 @@ export default function ScheduleForm({ campaignId: initialCampaignId, onSuccess 
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
-              <option value="">Seleccionar campaña</option>
+              <option value="">{t('social_select_campaign')}</option>
               {campaigns.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name} {c.status ? `(${c.status})` : ''}
@@ -110,9 +112,9 @@ export default function ScheduleForm({ campaignId: initialCampaignId, onSuccess 
             onChange={(e) => setProvider(e.target.value as any)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="META">Meta (Facebook/Instagram)</option>
-            <option value="TIKTOK">TikTok</option>
-            <option value="YOUTUBE">YouTube</option>
+            <option value="META">{t('social_provider_meta')}</option>
+            <option value="TIKTOK">{t('social_provider_tiktok')}</option>
+            <option value="YOUTUBE">{t('social_provider_youtube')}</option>
           </select>
         </div>
 

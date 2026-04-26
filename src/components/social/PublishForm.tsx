@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { publishContent, clearPublishSuccess } from '@/features/social/socialSlice';
+import { useTranslation } from '@/hooks/useTranslation';
 import FileUpload from './FileUpload';
 
 interface PublishFormProps {
@@ -12,6 +13,7 @@ interface PublishFormProps {
 
 export default function PublishForm({ brandId, onSuccess }: PublishFormProps) {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const { isPublishing, error, publishSuccess } = useAppSelector((state) => state.social);
 
   const [content, setContent] = useState('');
@@ -79,9 +81,9 @@ export default function PublishForm({ brandId, onSuccess }: PublishFormProps) {
             onChange={(e) => setProvider(e.target.value as any)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="META">Meta (Facebook/Instagram)</option>
-            <option value="TIKTOK">TikTok</option>
-            <option value="YOUTUBE">YouTube</option>
+            <option value="META">{t('social_provider_meta')}</option>
+            <option value="TIKTOK">{t('social_provider_tiktok')}</option>
+            <option value="YOUTUBE">{t('social_provider_youtube')}</option>
           </select>
         </div>
 

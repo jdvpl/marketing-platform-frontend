@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const scheduleData = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/scheduler/schedule`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/scheduler/schedule`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/scheduler/campaign/${campaignId}`,
+      `${API_GATEWAY_URL}/api/v1/scheduler/campaign/${campaignId}`,
       {
         method: 'GET',
         headers: {

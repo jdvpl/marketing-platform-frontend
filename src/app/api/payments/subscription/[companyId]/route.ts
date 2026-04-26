@@ -12,7 +12,7 @@ export async function GET(
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
 
-    const response = await fetch(`${GATEWAY_URL}/v1/payments/subscription/${companyId}`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/payments/subscription/${companyId}`, {
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -47,8 +47,8 @@ export async function POST(
     const token = cookieStore.get('access_token')?.value;
 
     const endpoint = isCancel
-      ? `${GATEWAY_URL}/v1/payments/subscription/${companyId}/cancel`
-      : `${GATEWAY_URL}/v1/payments/subscription/${companyId}`;
+      ? `${GATEWAY_URL}/api/v1/payments/subscription/${companyId}/cancel`
+      : `${GATEWAY_URL}/api/v1/payments/subscription/${companyId}`;
 
     const response = await fetch(endpoint, {
       method: 'POST',

@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const response = await fetch(`${API_GATEWAY_URL}/api/v1/storage/delete`, {
+
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/chatbot/chat`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -22,11 +23,10 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     if (!response.ok) {
-      return NextResponse.json({ error: data.error || 'Error al eliminar' }, { status: response.status });
+      return NextResponse.json({ error: data.error || 'Error en chatbot' }, { status: response.status });
     }
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Delete file error:', error);
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

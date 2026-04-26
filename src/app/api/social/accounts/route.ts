@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/social/accounts?brandId=${brandId}`,
+      `${API_GATEWAY_URL}/api/v1/social/accounts?brandId=${brandId}`,
       {
         method: 'GET',
         headers: {

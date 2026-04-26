@@ -123,7 +123,7 @@ export default function LandingPage() {
               <LanguageSelector />
               <ThemeToggle />
               <Link
-                href={loggedIn ? '/dashboard' : '/register'}
+                href={loggedIn ? '/dashboard' : '/login'}
                 className="inline-flex items-center px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-purple-200 transition-all duration-300"
               >
                 {loggedIn ? t.nav_dashboard : t.nav_start}
@@ -133,7 +133,7 @@ export default function LandingPage() {
               <LanguageSelector />
               <ThemeToggle />
               <Link
-                href={loggedIn ? '/dashboard' : '/register'}
+                href={loggedIn ? '/dashboard' : '/login'}
                 className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold"
               >
                 {loggedIn ? t.nav_dashboard_short : t.nav_start_short}
@@ -181,7 +181,7 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
-                href={loggedIn ? '/dashboard' : '/register'}
+                href={loggedIn ? '/dashboard' : '/login'}
                 className="group inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-lg hover:shadow-xl hover:shadow-purple-200 transition-all duration-300 hover:-translate-y-0.5"
               >
                 {loggedIn ? t.hero_cta_dashboard : t.hero_cta}
@@ -335,7 +335,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  href={loggedIn ? '/dashboard' : '/register'}
+                  href={loggedIn ? '/dashboard' : '/login'}
                   className="group inline-flex items-center justify-center px-8 py-4 rounded-full bg-white text-gray-900 font-semibold text-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
                 >
                   {loggedIn ? t.cta_dashboard : t.cta_start}

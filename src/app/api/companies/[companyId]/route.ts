@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/companies/${companyId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/companies/${companyId}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/companies/${companyId}`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/companies/${companyId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -84,7 +84,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/companies/${companyId}/delete`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/companies/${companyId}/delete`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

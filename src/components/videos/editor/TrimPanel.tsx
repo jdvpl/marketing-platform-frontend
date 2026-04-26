@@ -1,6 +1,7 @@
 'use client';
 
 import { ScissorsIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TrimPanelProps {
   trimStart: number;
@@ -19,6 +20,7 @@ export default function TrimPanel({
   onTrimStartChange,
   onTrimEndChange,
 }: TrimPanelProps) {
+  const { t } = useTranslation();
   const formatTimeInput = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
@@ -40,7 +42,7 @@ export default function TrimPanel({
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
         <ScissorsIcon className="h-4 w-4" />
-        <span>Recortar Video</span>
+        <span>{t('editor_panel_trim')}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

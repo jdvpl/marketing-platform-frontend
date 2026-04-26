@@ -21,7 +21,7 @@ export async function GET(
 
     const queryString = qs.toString() ? `?${qs.toString()}` : '';
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/ab-tests/brand/${brandId}${queryString}`,
+      `${API_GATEWAY_URL}/api/v1/ab-tests/brand/${brandId}${queryString}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
 

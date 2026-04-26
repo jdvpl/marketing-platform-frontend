@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     if (end) params.set('end', end);
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/scheduler/brand/${brandId}?${params}`,
+      `${API_GATEWAY_URL}/api/v1/scheduler/brand/${brandId}?${params}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
 

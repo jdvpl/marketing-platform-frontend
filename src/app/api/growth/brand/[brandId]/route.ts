@@ -18,7 +18,7 @@ export async function GET(
     const days = searchParams.get('days') || '30';
 
     const response = await fetch(
-      `${API_GATEWAY_URL}/v1/growth/brand/${brandId}/followers?days=${days}`,
+      `${API_GATEWAY_URL}/api/v1/growth/brand/${brandId}/followers?days=${days}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
 

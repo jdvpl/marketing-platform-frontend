@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${API_GATEWAY_URL}/v1/ab-tests`, {
+    const response = await fetch(`${API_GATEWAY_URL}/api/v1/ab-tests`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
