@@ -7,11 +7,13 @@ import { fetchBrands, createBrand, deleteBrand } from '@/features/brands/brandsS
 import { PlusIcon, TrashIcon, TagIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function BrandsPage() {
   const dispatch = useAppDispatch();
   const { selectedCompanyId, selectedCompany } = useCompanyBrand();
   const { brands, isLoading, error } = useAppSelector((state) => state.brands);
+  const { t } = useTranslation();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBrand, setNewBrand] = useState({
     name: '',
@@ -47,7 +49,7 @@ export default function BrandsPage() {
 
   const handleDeleteBrand = async (id: string) => {
     if (!selectedCompanyId) return;
-    if (confirm('¿Estás seguro de eliminar esta marca?')) {
+    if (confirm(t('brands_confirm_delete'))) {
       await dispatch(deleteBrand(id));
       dispatch(fetchBrands(selectedCompanyId));
     }
@@ -70,8 +72,8 @@ export default function BrandsPage() {
         <DashboardLayout>
           <div className="text-center py-20">
             <TagIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Selecciona una empresa</h2>
-            <p className="text-gray-500">Usa el selector en la barra superior para elegir una empresa</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('common_select_company')}</h2>
+            <p className="text-gray-500">{t('brands_select_company_desc')}</p>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -85,9 +87,9 @@ export default function BrandsPage() {
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Marcas</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('brands_title')}</h1>
             <p className="mt-2 text-gray-600">
-              Marcas de {selectedCompany?.name || 'tu empresa'}
+              {t('brands_of')} {selectedCompany?.name || t('common_select_company')}
             </p>
           </div>
           <button
@@ -95,7 +97,7 @@ export default function BrandsPage() {
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
-            <span>Nueva Marca</span>
+            <span>{t('brands_new')}</span>
           </button>
         </div>
 
@@ -112,12 +114,12 @@ export default function BrandsPage() {
         ) : brands.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <TagIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">No tienes marcas registradas</p>
+            <p className="text-gray-600 mb-4">{t('brands_no_brands')}</p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              Crear tu primera marca
+              {t('brands_create_first')}
             </button>
           </div>
         ) : (
@@ -139,11 +141,11 @@ export default function BrandsPage() {
                   </div>
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Idioma:</span>
+                      <span className="text-gray-600">{t('brands_language')}</span>
                       <span className="text-gray-900 font-medium">{brand.language.toUpperCase()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tono:</span>
+                      <span className="text-gray-600">{t('brands_tone')}</span>
                       <span className="text-gray-900 font-medium capitalize">{brand.tone}</span>
                     </div>
                   </div>
@@ -165,41 +167,41 @@ export default function BrandsPage() {
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Nueva Marca</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('brands_modal_title')}</h2>
               <form onSubmit={handleCreateBrand} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de la Marca</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('brands_name_label')}</label>
                   <input
                     type="text"
                     value={newBrand.name}
                     onChange={(e) => setNewBrand({ ...newBrand, name: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Ej: Mi Marca Cool"
+                    placeholder={t('brands_name_placeholder')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('brands_category_label')}</label>
                   <select
                     value={newBrand.category}
                     onChange={(e) => setNewBrand({ ...newBrand, category: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
-                    <option value="">Seleccionar categoría</option>
-                    <option value="fashion">Moda</option>
-                    <option value="tech">Tecnología</option>
-                    <option value="food">Comida y Bebida</option>
-                    <option value="health">Salud y Bienestar</option>
-                    <option value="education">Educación</option>
-                    <option value="entertainment">Entretenimiento</option>
-                    <option value="travel">Viajes</option>
-                    <option value="finance">Finanzas</option>
+                    <option value="">{t('brands_select_category')}</option>
+                    <option value="fashion">{t('brands_cat_fashion')}</option>
+                    <option value="tech">{t('brands_cat_tech')}</option>
+                    <option value="food">{t('brands_cat_food')}</option>
+                    <option value="health">{t('brands_cat_health')}</option>
+                    <option value="education">{t('brands_cat_education')}</option>
+                    <option value="entertainment">{t('brands_cat_entertainment')}</option>
+                    <option value="travel">{t('brands_cat_travel')}</option>
+                    <option value="finance">{t('brands_cat_finance')}</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('brands_language_label')}</label>
                     <select
                       value={newBrand.language}
                       onChange={(e) => setNewBrand({ ...newBrand, language: e.target.value })}
@@ -212,26 +214,26 @@ export default function BrandsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tono</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('brands_tone_label')}</label>
                     <select
                       value={newBrand.tone}
                       onChange={(e) => setNewBrand({ ...newBrand, tone: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="casual">Casual</option>
-                      <option value="professional">Profesional</option>
-                      <option value="friendly">Amigable</option>
-                      <option value="formal">Formal</option>
-                      <option value="humorous">Humorístico</option>
+                      <option value="casual">{t('brands_tone_casual')}</option>
+                      <option value="professional">{t('brands_tone_professional')}</option>
+                      <option value="friendly">{t('brands_tone_friendly')}</option>
+                      <option value="formal">{t('brands_tone_formal')}</option>
+                      <option value="humorous">{t('brands_tone_humorous')}</option>
                     </select>
                   </div>
                 </div>
                 <div className="flex space-x-3 pt-4">
                   <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                    Cancelar
+                    {t('common_cancel')}
                   </button>
                   <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Crear Marca
+                    {t('brands_create_btn')}
                   </button>
                 </div>
               </form>

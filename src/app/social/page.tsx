@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { useCompanyBrand } from '@/hooks/useCompanyBrand';
-import { fetchSocialAccounts } from '@/features/social/socialSlice';
+import { fetchSocialAccounts, disconnectSocialAccount } from '@/features/social/socialSlice';
 import SocialAccountCard from '@/components/social/SocialAccountCard';
 import ConnectSocialButton from '@/components/social/ConnectSocialButton';
 import PublishForm from '@/components/social/PublishForm';
@@ -17,21 +17,23 @@ import {
   CalendarDaysIcon,
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Tab = 'accounts' | 'publish' | 'cross-post' | 'schedule';
-
-const TABS: { id: Tab; label: string; icon: React.ElementType; description: string }[] = [
-  { id: 'accounts', label: 'Cuentas', icon: ShareIcon, description: 'Redes conectadas' },
-  { id: 'publish', label: 'Publicar', icon: MegaphoneIcon, description: 'Una red' },
-  { id: 'cross-post', label: 'Publicar en todas', icon: GlobeAltIcon, description: 'Todas las redes' },
-  { id: 'schedule', label: 'Programar', icon: CalendarDaysIcon, description: 'Agendar' },
-];
 
 export default function SocialPage() {
   const dispatch = useAppDispatch();
   const { selectedBrandId } = useCompanyBrand();
   const { accounts: socialAccounts, isLoading: socialLoading, error: socialError } = useAppSelector((state) => state.social);
   const [selectedTab, setSelectedTab] = useState<Tab>('accounts');
+  const { t } = useTranslation();
+
+  const TABS: { id: Tab; label: string; icon: React.ElementType; description: string }[] = [
+    { id: 'accounts', label: t('social_tab_accounts'), icon: ShareIcon, description: t('social_tab_accounts_desc') },
+    { id: 'publish', label: t('social_tab_publish'), icon: MegaphoneIcon, description: t('social_tab_publish_desc') },
+    { id: 'cross-post', label: t('social_tab_crosspost'), icon: GlobeAltIcon, description: t('social_tab_crosspost_desc') },
+    { id: 'schedule', label: t('social_tab_schedule'), icon: CalendarDaysIcon, description: t('social_tab_schedule_desc') },
+  ];
 
   useEffect(() => {
     if (selectedBrandId) {
@@ -46,10 +48,8 @@ export default function SocialPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Redes Sociales</h1>
-              <p className="mt-1 text-gray-500">
-                Gestiona y publica en todas tus redes desde un solo lugar
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('social_title')}</h1>
+              <p className="mt-1 text-gray-500">{t('social_desc')}</p>
             </div>
             {selectedTab === 'accounts' && (
               <ConnectSocialButton brandId={selectedBrandId!} />
@@ -111,16 +111,18 @@ export default function SocialPage() {
                   ) : socialAccounts.length === 0 ? (
                     <div className="text-center py-12">
                       <ShareIcon className="h-14 w-14 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Sin cuentas conectadas</h3>
-                      <p className="text-gray-500 mb-6 text-sm">
-                        Conecta tus redes sociales para publicar y gestionar todo desde aquí
-                      </p>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">{t('social_no_accounts')}</h3>
+                      <p className="text-gray-500 mb-6 text-sm">{t('social_no_accounts_desc')}</p>
                       <ConnectSocialButton brandId={selectedBrandId!} />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                       {socialAccounts.map((account) => (
-                        <SocialAccountCard key={account.id} account={account} />
+                        <SocialAccountCard
+                          key={account.id}
+                          account={account}
+                          onDisconnect={(id) => dispatch(disconnectSocialAccount(id))}
+                        />
                       ))}
                     </div>
                   )}

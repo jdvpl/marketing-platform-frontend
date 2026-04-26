@@ -13,6 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { applyTheme } from '@/components/ThemeToggle';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface UserSettings {
   fullName: string;
@@ -44,6 +46,7 @@ const defaultSettings: UserSettings = {
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,20 +111,10 @@ export default function SettingsPage() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
-      // Apply theme immediately
+      // Apply theme immediately and save to cookie
       const t = data.theme || settings.theme;
-      const root = document.documentElement;
-      if (t === 'dark') {
-        root.classList.add('dark');
-      } else if (t === 'auto') {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      } else {
-        root.classList.remove('dark');
-      }
+      applyTheme(t);
+      document.cookie = `theme=${t}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     } catch (error: any) {
       setSaveError(error.message || 'Error al guardar configuración');
       setTimeout(() => setSaveError(''), 5000);
@@ -136,11 +129,11 @@ export default function SettingsPage() {
     setPasswordSuccess(false);
 
     if (passwordForm.newPass !== passwordForm.confirm) {
-      setPasswordError('Las contraseñas no coinciden');
+      setPasswordError(t('settings_pass_no_match'));
       return;
     }
     if (passwordForm.newPass.length < 8) {
-      setPasswordError('La contraseña debe tener al menos 8 caracteres');
+      setPasswordError(t('settings_pass_min_len'));
       return;
     }
 
@@ -174,10 +167,10 @@ export default function SettingsPage() {
   };
 
   const tabs = [
-    { id: 'profile', name: 'Perfil', icon: UserCircleIcon },
-    { id: 'notifications', name: 'Notificaciones', icon: BellIcon },
-    { id: 'security', name: 'Seguridad', icon: ShieldCheckIcon },
-    { id: 'appearance', name: 'Apariencia', icon: PaintBrushIcon },
+    { id: 'profile', name: t('settings_tab_profile'), icon: UserCircleIcon },
+    { id: 'notifications', name: t('settings_tab_notifications'), icon: BellIcon },
+    { id: 'security', name: t('settings_tab_security'), icon: ShieldCheckIcon },
+    { id: 'appearance', name: t('settings_tab_appearance'), icon: PaintBrushIcon },
   ];
 
   return (
@@ -185,8 +178,8 @@ export default function SettingsPage() {
       <DashboardLayout>
         <div className="space-y-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-            <p className="mt-2 text-gray-600">Gestiona tu cuenta y preferencias</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('settings_title')}</h1>
+            <p className="mt-2 text-gray-600">{t('settings_desc')}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -218,7 +211,7 @@ export default function SettingsPage() {
                 {saveSuccess && (
                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
                     <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                    <p className="text-sm text-green-800">Configuración guardada exitosamente</p>
+                    <p className="text-sm text-green-800">{t('settings_saved')}</p>
                   </div>
                 )}
 
@@ -237,10 +230,10 @@ export default function SettingsPage() {
                 <form onSubmit={handleSaveSettings}>
                   {activeTab === 'profile' && (
                     <div className="space-y-6">
-                      <h2 className="text-xl font-bold text-gray-900">Información de Perfil</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{t('settings_profile_title')}</h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_fullname')}</label>
                           <input
                             type="text"
                             value={settings.fullName || ''}
@@ -250,7 +243,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_email')}</label>
                           <input
                             type="email"
                             value={user?.email || ''}
@@ -259,7 +252,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_phone')}</label>
                           <input
                             type="tel"
                             value={settings.phone || ''}
@@ -274,13 +267,13 @@ export default function SettingsPage() {
 
                   {activeTab === 'notifications' && (
                     <div className="space-y-6">
-                      <h2 className="text-xl font-bold text-gray-900">Preferencias de Notificaciones</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{t('settings_notif_title')}</h2>
                       <div className="space-y-4">
                         {([
-                          { key: 'emailNotifications' as const, title: 'Notificaciones por Email', desc: 'Recibir actualizaciones por correo' },
-                          { key: 'campaignAlerts' as const, title: 'Alertas de Campañas', desc: 'Notificar sobre campañas activas' },
-                          { key: 'weeklyReports' as const, title: 'Reportes Semanales', desc: 'Resumen de actividad cada semana' },
-                          { key: 'socialMentions' as const, title: 'Menciones en Redes', desc: 'Alertas de menciones sociales' },
+                          { key: 'emailNotifications' as const, title: t('settings_notif_email'), desc: t('settings_notif_email_desc') },
+                          { key: 'campaignAlerts' as const, title: t('settings_notif_campaigns'), desc: t('settings_notif_campaigns_desc') },
+                          { key: 'weeklyReports' as const, title: t('settings_notif_reports'), desc: t('settings_notif_reports_desc') },
+                          { key: 'socialMentions' as const, title: t('settings_notif_mentions'), desc: t('settings_notif_mentions_desc') },
                         ]).map((item) => (
                           <div key={item.key} className="flex items-center justify-between">
                             <div>
@@ -308,12 +301,12 @@ export default function SettingsPage() {
 
                   {activeTab === 'security' && (
                     <div className="space-y-6">
-                      <h2 className="text-xl font-bold text-gray-900">Seguridad de la Cuenta</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{t('settings_security_title')}</h2>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div>
-                            <p className="font-medium text-gray-900">Autenticación de Dos Factores</p>
-                            <p className="text-sm text-gray-500">Seguridad adicional para tu cuenta</p>
+                            <p className="font-medium text-gray-900">{t('settings_2fa')}</p>
+                            <p className="text-sm text-gray-500">{t('settings_2fa_desc')}</p>
                           </div>
                           <button
                             type="button"
@@ -331,16 +324,16 @@ export default function SettingsPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Tiempo de Sesión (minutos)</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_session_timeout')}</label>
                           <select
                             value={settings.sessionTimeout}
                             onChange={(e) => updateField('sessionTimeout', parseInt(e.target.value))}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
-                            <option value={15}>15 minutos</option>
-                            <option value={30}>30 minutos</option>
-                            <option value={60}>1 hora</option>
-                            <option value={120}>2 horas</option>
+                            <option value={15}>{t('settings_session_15')}</option>
+                            <option value={30}>{t('settings_session_30')}</option>
+                            <option value={60}>{t('settings_session_60')}</option>
+                            <option value={120}>{t('settings_session_120')}</option>
                           </select>
                         </div>
 
@@ -351,7 +344,7 @@ export default function SettingsPage() {
                             className="flex items-center text-blue-600 hover:text-blue-700 font-medium"
                           >
                             <KeyIcon className="h-5 w-5 mr-2" />
-                            Cambiar Contraseña
+                            {t('settings_change_password')}
                           </button>
                         </div>
                       </div>
@@ -360,22 +353,27 @@ export default function SettingsPage() {
 
                   {activeTab === 'appearance' && (
                     <div className="space-y-6">
-                      <h2 className="text-xl font-bold text-gray-900">Apariencia</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{t('settings_appearance_title')}</h2>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Tema</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_theme')}</label>
                           <select
                             value={settings.theme}
-                            onChange={(e) => updateField('theme', e.target.value)}
+                            onChange={(e) => {
+                              const newTheme = e.target.value;
+                              updateField('theme', newTheme);
+                              applyTheme(newTheme);
+                              document.cookie = `theme=${newTheme}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+                            }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                           >
-                            <option value="light">Claro</option>
-                            <option value="dark">Oscuro</option>
-                            <option value="auto">Automático</option>
+                            <option value="light">{t('settings_theme_light')}</option>
+                            <option value="dark">{t('settings_theme_dark')}</option>
+                            <option value="auto">{t('settings_theme_auto')}</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_language')}</label>
                           <select
                             value={settings.language}
                             onChange={(e) => updateField('language', e.target.value)}
@@ -388,7 +386,7 @@ export default function SettingsPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Zona Horaria</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_timezone')}</label>
                           <select
                             value={settings.timezone}
                             onChange={(e) => updateField('timezone', e.target.value)}
@@ -415,14 +413,14 @@ export default function SettingsPage() {
                         onClick={() => loadSettings()}
                         className="px-6 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                       >
-                        Cancelar
+                        {t('common_cancel')}
                       </button>
                       <button
                         type="submit"
                         disabled={isSaving}
                         className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                        {isSaving ? t('common_saving') : t('common_save')}
                       </button>
                     </div>
                   </div>
@@ -436,17 +434,17 @@ export default function SettingsPage() {
           {showPasswordModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Cambiar Contraseña</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('settings_modal_title')}</h2>
 
                 {passwordSuccess ? (
                   <div className="text-center py-4">
                     <CheckCircleIcon className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                    <p className="text-green-700 font-medium">Contraseña actualizada</p>
+                    <p className="text-green-700 font-medium">{t('settings_pass_updated')}</p>
                   </div>
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña Actual</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_current_pass')}</label>
                       <input
                         type="password"
                         value={passwordForm.current}
@@ -456,7 +454,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Nueva Contraseña</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_new_pass')}</label>
                       <input
                         type="password"
                         value={passwordForm.newPass}
@@ -467,7 +465,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
+<label className="block text-sm font-medium text-gray-700 mb-2">{t('settings_confirm_pass')}</label>
                       <input
                         type="password"
                         value={passwordForm.confirm}
@@ -490,14 +488,14 @@ export default function SettingsPage() {
                         onClick={() => { setShowPasswordModal(false); setPasswordError(''); }}
                         className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                       >
-                        Cancelar
+                        {t('common_cancel')}
                       </button>
                       <button
                         type="submit"
                         disabled={passwordLoading}
                         className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {passwordLoading ? 'Cambiando...' : 'Cambiar'}
+                        {passwordLoading ? t('settings_changing') : t('settings_change_btn')}
                       </button>
                     </div>
                   </form>

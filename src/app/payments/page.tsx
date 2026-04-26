@@ -16,6 +16,7 @@ import {
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import UsageMeter from '@/components/UsageMeter';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   CheckCircleIcon,
   CreditCardIcon,
@@ -28,19 +29,19 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: 'Activo', color: 'bg-green-100 text-green-700' },
-  TRIALING: { label: 'Período de prueba', color: 'bg-blue-100 text-blue-700' },
-  PAST_DUE: { label: 'Pago pendiente', color: 'bg-yellow-100 text-yellow-700' },
-  CANCELED: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
-  INACTIVE: { label: 'Sin plan activo', color: 'bg-gray-100 text-gray-600' },
+const STATUS_COLORS: Record<string, string> = {
+  ACTIVE: 'bg-green-100 text-green-700',
+  TRIALING: 'bg-blue-100 text-blue-700',
+  PAST_DUE: 'bg-yellow-100 text-yellow-700',
+  CANCELED: 'bg-red-100 text-red-700',
+  INACTIVE: 'bg-gray-100 text-gray-600',
 };
 
-const INVOICE_STATUS: Record<string, { label: string; color: string }> = {
-  paid: { label: 'Pagado', color: 'text-green-600' },
-  open: { label: 'Pendiente', color: 'text-yellow-600' },
-  void: { label: 'Anulado', color: 'text-gray-400' },
-  uncollectible: { label: 'Incobrable', color: 'text-red-600' },
+const INVOICE_COLORS: Record<string, string> = {
+  paid: 'text-green-600',
+  open: 'text-yellow-600',
+  void: 'text-gray-400',
+  uncollectible: 'text-red-600',
 };
 
 const PLAN_COLORS: Record<number, string> = {
@@ -53,9 +54,11 @@ const PLAN_COLORS: Record<number, string> = {
 export default function PaymentsPage() {
   const dispatch = useAppDispatch();
   const { selectedCompanyId, selectedCompany } = useCompanyBrand();
+  const { t } = useTranslation();
   const { plans, subscription, paymentHistory, isLoading, isCreatingCheckout, error, checkoutUrl, portalUrl } =
     useAppSelector((state) => state.payments);
   const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
+  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchPlans());
@@ -89,13 +92,14 @@ export default function PaymentsPage() {
 
   const handleSubscribe = (plan: Plan) => {
     if (!selectedCompanyId) return;
+    setCheckoutPlanId(plan.id);
     dispatch(createCheckout({
       companyId: selectedCompanyId,
       planId: plan.id,
       interval: billingInterval,
       successUrl: `${window.location.origin}/payments/success`,
       cancelUrl: `${window.location.origin}/payments`,
-    }));
+    })).finally(() => setCheckoutPlanId(null));
   };
 
   const handlePortal = () => {
@@ -114,7 +118,19 @@ export default function PaymentsPage() {
     return new Date(iso).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const subStatus = subscription?.status ? STATUS_LABELS[subscription.status] : STATUS_LABELS['INACTIVE'];
+  const getStatusLabel = (status: string) => {
+    const key = `payments_status_${status.toLowerCase()}` as const;
+    return t(key) || status;
+  };
+  const getStatusColor = (status: string) => STATUS_COLORS[status] || 'bg-gray-100 text-gray-600';
+  const getInvoiceLabel = (status: string) => {
+    const key = `payments_invoice_${status.toLowerCase()}` as const;
+    return t(key) || status;
+  };
+  const getInvoiceColor = (status: string) => INVOICE_COLORS[status] || 'text-gray-500';
+
+  const subStatusColor = getStatusColor(subscription?.status || 'INACTIVE');
+  const subStatusLabel = getStatusLabel(subscription?.status || 'INACTIVE');
 
   if (!selectedCompanyId) {
     return (
@@ -122,8 +138,8 @@ export default function PaymentsPage() {
         <DashboardLayout>
           <div className="text-center py-20">
             <CreditCardIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Selecciona una empresa</h2>
-            <p className="text-gray-500">Necesitas seleccionar una empresa para ver los planes de pago</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('payments_select_company')}</h2>
+            <p className="text-gray-500">{t('payments_select_company_desc')}</p>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -137,9 +153,9 @@ export default function PaymentsPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Planes y Facturación</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('payments_title')}</h1>
               <p className="mt-1 text-gray-500">
-                {selectedCompany?.name || 'Empresa'} — Gestiona tu suscripción
+                {selectedCompany?.name || t('common_select_company')} — {t('payments_manage')}
               </p>
             </div>
             {(subscription?.status === 'ACTIVE' || subscription?.status === 'TRIALING') && (
@@ -148,7 +164,7 @@ export default function PaymentsPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
               >
                 <Cog6ToothIcon className="h-4 w-4" />
-                Gestionar facturación
+                {t('payments_manage')}
                 <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 text-gray-400" />
               </button>
             )}
@@ -168,14 +184,12 @@ export default function PaymentsPage() {
                   <GiftIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Plan Gratuito</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Estás usando el plan gratuito. Actualiza para desbloquear más marcas, publicaciones diarias y funciones de IA.
-                  </p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{t('payments_free_plan')}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{t('payments_free_plan_desc')}</p>
                   <div className="grid grid-cols-3 gap-4">
-                    <UsageMeter label="Marcas" current={0} limit={1} />
-                    <UsageMeter label="Posts / día" current={0} limit={3} />
-                    <UsageMeter label="IA / mes" current={0} limit={10} />
+                    <UsageMeter label={t('payments_usage_brands')} current={0} limit={1} />
+                    <UsageMeter label={t('payments_usage_posts')} current={0} limit={3} />
+                    <UsageMeter label={t('payments_usage_ai')} current={0} limit={10} />
                   </div>
                 </div>
               </div>
@@ -186,28 +200,28 @@ export default function PaymentsPage() {
           {subscription && !isFreePlan && (
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Tu plan actual</h2>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${subStatus.color}`}>
-                  {subStatus.label}
+                <h2 className="text-lg font-semibold text-gray-900">{t('payments_current_plan')}</h2>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${subStatusColor}`}>
+                  {subStatusLabel}
                 </span>
               </div>
               <div className="p-6 grid grid-cols-1 sm:grid-cols-4 gap-6">
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Plan</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('payments_plan_label')}</p>
                   <p className="text-lg font-bold text-gray-900">{subscription.planName}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Facturación</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('payments_billing')}</p>
                   <p className="text-sm font-medium text-gray-800">
-                    {subscription.billingInterval === 'year' ? 'Anual' : subscription.billingInterval === 'month' ? 'Mensual' : '—'}
+                    {subscription.billingInterval === 'year' ? t('payments_billing_annual') : subscription.billingInterval === 'month' ? t('payments_billing_monthly') : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Próximo cobro</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('payments_next_charge')}</p>
                   <p className="text-sm font-medium text-gray-800">{formatDate(subscription.currentPeriodEnd)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Importe</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('payments_amount')}</p>
                   <p className="text-sm font-medium text-gray-800">
                     {subscription.amount != null
                       ? `$${(subscription.amount / 100).toFixed(2)} ${(subscription.currency || 'usd').toUpperCase()}`
@@ -220,7 +234,7 @@ export default function PaymentsPage() {
                   <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <ClockIcon className="h-4 w-4 text-yellow-600 flex-shrink-0" />
                     <p className="text-sm text-yellow-800">
-                      Tu suscripción se cancelará el {formatDate(subscription.currentPeriodEnd)}.
+                      {t('payments_cancel_notice')} {formatDate(subscription.currentPeriodEnd)}.
                     </p>
                   </div>
                 </div>
@@ -231,7 +245,7 @@ export default function PaymentsPage() {
           {/* Billing toggle */}
           <div className="flex items-center justify-center gap-4">
             <span className={`text-sm font-medium ${billingInterval === 'month' ? 'text-gray-900' : 'text-gray-400'}`}>
-              Mensual
+              {t('payments_monthly')}
             </span>
             <button
               onClick={() => setBillingInterval(billingInterval === 'month' ? 'year' : 'month')}
@@ -246,11 +260,11 @@ export default function PaymentsPage() {
               />
             </button>
             <span className={`text-sm font-medium ${billingInterval === 'year' ? 'text-gray-900' : 'text-gray-400'}`}>
-              Anual
+              {t('payments_annual')}
             </span>
             {billingInterval === 'year' && (
               <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                Ahorra 20%
+                {t('payments_save20')}
               </span>
             )}
           </div>
@@ -275,7 +289,7 @@ export default function PaymentsPage() {
                   >
                     {plan.highlighted && (
                       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide">
-                        MÁS POPULAR
+                        {t('payments_most_popular')}
                       </div>
                     )}
                     <div className="p-6 flex flex-col flex-1">
@@ -286,21 +300,21 @@ export default function PaymentsPage() {
                       <p className="text-sm text-gray-500 mt-1 mb-4">{plan.description}</p>
                       <div className="mb-6">
                         {isFree ? (
-                          <span className="text-4xl font-extrabold text-gray-900">Gratis</span>
+                          <span className="text-4xl font-extrabold text-gray-900">{t('payments_free_price')}</span>
                         ) : (
                           <>
                             <span className="text-4xl font-extrabold text-gray-900">${price}</span>
-                            <span className="text-gray-500 text-sm">/mes</span>
+                            <span className="text-gray-500 text-sm">{t('payments_per_month')}</span>
                             {billingInterval === 'year' && (
                               <p className="text-xs text-green-600 font-medium mt-0.5">
-                                ${plan.yearlyPrice}/año — Ahorra ${(plan.monthlyPrice * 12 - plan.yearlyPrice)}
+                                ${plan.yearlyPrice}/{t('payments_year_save')}{(plan.monthlyPrice * 12 - plan.yearlyPrice)}
                               </p>
                             )}
                           </>
                         )}
                       </div>
                       <ul className="space-y-3 mb-8 flex-1">
-                        {plan.features.map((f, i) => (
+                        {(plan.features || []).map((f, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                             <CheckBadgeIcon className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                             {f}
@@ -310,11 +324,11 @@ export default function PaymentsPage() {
                       {isCurrentPlan ? (
                         <div className="flex items-center justify-center gap-2 py-3 px-4 bg-green-50 border border-green-200 rounded-xl text-sm font-semibold text-green-700">
                           <CheckCircleIcon className="h-5 w-5" />
-                          Plan actual
+                          {t('payments_current')}
                         </div>
                       ) : isFree && isFreePlan ? (
                         <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-500">
-                          Plan actual
+                          {t('payments_current')}
                         </div>
                       ) : isFree ? null : (
                         <button
@@ -326,8 +340,8 @@ export default function PaymentsPage() {
                               : 'bg-gray-900 text-white hover:bg-gray-700'
                           }`}
                         >
-                          {isCreatingCheckout ? 'Redirigiendo...' : isFreePlan ? 'Comenzar' : 'Cambiar plan'}
-                          {!isCreatingCheckout && <ArrowTopRightOnSquareIcon className="inline h-3.5 w-3.5 ml-2" />}
+                          {checkoutPlanId === plan.id ? t('payments_redirecting') : isFreePlan ? t('payments_start') : t('payments_change_plan')}
+                          {checkoutPlanId !== plan.id && <ArrowTopRightOnSquareIcon className="inline h-3.5 w-3.5 ml-2" />}
                         </button>
                       )}
                     </div>
@@ -340,28 +354,27 @@ export default function PaymentsPage() {
           {/* Payment History */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">Historial de pagos</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('payments_history_title')}</h2>
             </div>
             {paymentHistory.length === 0 ? (
               <div className="text-center py-12">
                 <CreditCardIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No hay pagos registrados todavía</p>
+                <p className="text-sm text-gray-500">{t('payments_no_history')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide">
-                      <th className="px-6 py-3">Descripción</th>
-                      <th className="px-6 py-3">Fecha</th>
-                      <th className="px-6 py-3">Importe</th>
-                      <th className="px-6 py-3">Estado</th>
-                      <th className="px-6 py-3">Factura</th>
+                      <th className="px-6 py-3">{t('payments_col_desc')}</th>
+                      <th className="px-6 py-3">{t('payments_col_date')}</th>
+                      <th className="px-6 py-3">{t('payments_col_amount')}</th>
+                      <th className="px-6 py-3">{t('payments_col_status')}</th>
+                      <th className="px-6 py-3">{t('payments_col_invoice')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {paymentHistory.map((item) => {
-                      const inv = INVOICE_STATUS[item.status] || { label: item.status, color: 'text-gray-500' };
                       return (
                         <tr key={item.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 text-gray-800">{item.description}</td>
@@ -370,18 +383,18 @@ export default function PaymentsPage() {
                             ${(item.amount / 100).toFixed(2)} {item.currency.toUpperCase()}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`font-medium ${inv.color}`}>{inv.label}</span>
+                            <span className={`font-medium ${getInvoiceColor(item.status)}`}>{getInvoiceLabel(item.status)}</span>
                           </td>
                           <td className="px-6 py-4">
                             {item.pdfUrl ? (
                               <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
                                 <DocumentArrowDownIcon className="h-4 w-4" />
-                                PDF
+                                {t('payments_faq_invoice_pdf')}
                               </a>
                             ) : item.invoiceUrl ? (
                               <a href={item.invoiceUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
                                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                                Ver
+                                {t('payments_faq_invoice_view')}
                               </a>
                             ) : '—'}
                           </td>
@@ -396,7 +409,7 @@ export default function PaymentsPage() {
 
           {/* FAQ */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Preguntas frecuentes</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('payments_faq_title')}</h2>
             <div className="space-y-4">
               {[
                 { q: '¿Puedo cambiar de plan en cualquier momento?', a: 'Sí, puedes actualizar o degradar tu plan desde el portal de facturación. Los cambios se reflejan de inmediato.' },

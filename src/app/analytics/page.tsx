@@ -6,6 +6,7 @@ import { useCompanyBrand } from '@/hooks/useCompanyBrand';
 import { fetchBrandMetrics, fetchGrowthTrend, fetchBestTimes } from '@/features/metrics/metricsSlice';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   EyeIcon,
   HeartIcon,
@@ -26,11 +27,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   YOUTUBE: 'from-red-500 to-orange-500',
 };
 
-const DAYS_OPTIONS = [
-  { value: 7, label: '7 días' },
-  { value: 30, label: '30 días' },
-  { value: 90, label: '90 días' },
-];
+const DAYS_VALUES = [7, 30, 90];
 
 function fmt(n?: number) {
   if (n === undefined || n === null) return '–';
@@ -53,6 +50,12 @@ export default function AnalyticsPage() {
   const dispatch = useAppDispatch();
   const { selectedBrandId } = useCompanyBrand();
   const { brandMetrics, growthTrend, bestTimes, isLoading } = useAppSelector((s) => s.metrics);
+  const { t } = useTranslation();
+  const DAYS_OPTIONS = [
+    { value: 7, label: `7 ${t('analytics_days')}` },
+    { value: 30, label: `30 ${t('analytics_days')}` },
+    { value: 90, label: `90 ${t('analytics_days')}` },
+  ];
   const [days, setDays] = useState(30);
   const [providerFilter, setProviderFilter] = useState('');
   const [revenue, setRevenue] = useState<RevenueData | null>(null);
@@ -113,8 +116,8 @@ export default function AnalyticsPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-              <p className="mt-1 text-gray-500">Vistas, likes, seguidores y mejores horarios</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('analytics_title')}</h1>
+              <p className="mt-1 text-gray-500">{t('analytics_desc')}</p>
             </div>
             <button
               onClick={handleSync}
@@ -122,17 +125,17 @@ export default function AnalyticsPage() {
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm font-medium"
             >
               <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Sincronizar
+              {t('analytics_sync')}
             </button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Vistas', value: fmt(summary?.totalViews), icon: EyeIcon, color: 'from-blue-500 to-cyan-500' },
-              { label: 'Total Likes', value: fmt(summary?.totalLikes), icon: HeartIcon, color: 'from-pink-500 to-rose-500' },
-              { label: 'Compartidos', value: fmt(summary?.totalShares), icon: ShareIcon, color: 'from-green-500 to-emerald-500' },
-              { label: 'Eng. Promedio', value: summary?.avgEngagementRate || '–', icon: ArrowTrendingUpIcon, color: 'from-purple-500 to-violet-500' },
+              { label: t('analytics_total_views'), value: fmt(summary?.totalViews), icon: EyeIcon, color: 'from-blue-500 to-cyan-500' },
+              { label: t('analytics_total_likes'), value: fmt(summary?.totalLikes), icon: HeartIcon, color: 'from-pink-500 to-rose-500' },
+              { label: t('analytics_shares'), value: fmt(summary?.totalShares), icon: ShareIcon, color: 'from-green-500 to-emerald-500' },
+              { label: t('analytics_avg_eng'), value: summary?.avgEngagementRate || '–', icon: ArrowTrendingUpIcon, color: 'from-purple-500 to-violet-500' },
             ].map((card) => (
               <div key={card.label} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
                 <div className={`inline-flex p-2.5 rounded-lg bg-gradient-to-br ${card.color} mb-3`}>
@@ -147,7 +150,7 @@ export default function AnalyticsPage() {
           {/* Performance by Provider */}
           {providerEntries.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">Rendimiento por Red Social</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-5">{t('analytics_perf_by_network')}</h2>
               <div className="space-y-4">
                 {providerEntries.map((entry) => (
                   <div key={entry.provider} className="flex items-center gap-4">
@@ -158,15 +161,15 @@ export default function AnalyticsPage() {
                     </div>
                     <div className="flex-1 grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-xs text-gray-400">Posts</p>
+                        <p className="text-xs text-gray-400">{t('analytics_posts')}</p>
                         <p className="font-semibold text-gray-900">{entry.posts}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Vistas</p>
+                        <p className="text-xs text-gray-400">{t('analytics_views')}</p>
                         <p className="font-semibold text-gray-900">{fmt(entry.views)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Eng.</p>
+                        <p className="text-xs text-gray-400">{t('analytics_eng')}</p>
                         <p className="font-semibold text-green-600">{entry.avgEng.toFixed(1)}%</p>
                       </div>
                     </div>
@@ -190,7 +193,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <UserGroupIcon className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-lg font-bold text-gray-900">Crecimiento de Seguidores</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{t('analytics_follower_growth')}</h2>
                 </div>
                 <div className="flex gap-1">
                   {DAYS_OPTIONS.map((opt) => (
@@ -215,7 +218,7 @@ export default function AnalyticsPage() {
                     <span className="text-3xl font-bold text-gray-900">
                       +{fmt(growthTrend.totalFollowersGained)}
                     </span>
-                    <span className="text-sm text-gray-500">seguidores en {days} días</span>
+                    <span className="text-sm text-gray-500">{t('analytics_followers_in')} {days} {t('analytics_days')}</span>
                   </div>
 
                   {growthTrend.accounts.length > 0 ? (
@@ -227,29 +230,27 @@ export default function AnalyticsPage() {
                           </span>
                           <div className="flex-1">
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-900 font-medium">{fmt(acc.followersEnd)} seguidores</span>
+                              <span className="text-gray-900 font-medium">{fmt(acc.followersEnd)} {t('analytics_followers')}</span>
                               <span className={`font-semibold ${acc.growthRatePct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {acc.growthRatePct >= 0 ? '+' : ''}{acc.growthRatePct.toFixed(1)}%
                               </span>
                             </div>
                             <div className="text-xs text-gray-400 mt-0.5">
-                              +{fmt(acc.followersGained)} ganados · Eng: {acc.currentEngagementRatePct.toFixed(1)}%
+                              +{fmt(acc.followersGained)} {t('analytics_gained')} · Eng: {acc.currentEngagementRatePct.toFixed(1)}%
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400 text-center py-4">
-                      Sin datos de crecimiento para este período
-                    </p>
+                    <p className="text-sm text-gray-400 text-center py-4">{t('analytics_no_growth')}</p>
                   )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
                     <UserGroupIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">Cargando datos de crecimiento...</p>
+                    <p className="text-sm text-gray-400">{t('analytics_loading_growth')}</p>
                   </div>
                 </div>
               )}
@@ -260,14 +261,14 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <ClockIcon className="h-5 w-5 text-orange-500" />
-                  <h2 className="text-lg font-bold text-gray-900">Mejores Horarios</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{t('analytics_best_times')}</h2>
                 </div>
                 <select
                   value={providerFilter}
                   onChange={(e) => setProviderFilter(e.target.value)}
                   className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="">Todas las redes</option>
+                  <option value="">{t('analytics_all_networks')}</option>
                   <option value="META">Meta</option>
                   <option value="TIKTOK">TikTok</option>
                   <option value="YOUTUBE">YouTube</option>
@@ -277,16 +278,14 @@ export default function AnalyticsPage() {
               {bestTimes ? (
                 <div className="space-y-5">
                   {bestTimes.totalPostsAnalyzed === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">
-                      No hay suficientes datos todavía. Publica más para ver recomendaciones.
-                    </p>
+                    <p className="text-sm text-gray-400 text-center py-4">{t('analytics_no_best_times')}</p>
                   ) : (
                     <>
                       {/* Best Hours */}
                       {bestTimes.bestHours.length > 0 && (
                         <div>
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                            Mejores horas del día
+                            {t('analytics_best_hours')}
                           </p>
                           <div className="flex gap-2 flex-wrap">
                             {bestTimes.bestHours.map((h) => (
@@ -305,7 +304,7 @@ export default function AnalyticsPage() {
                       {bestTimes.bestDays.length > 0 && (
                         <div>
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                            Mejores días de la semana
+                            {t('analytics_best_days')}
                           </p>
                           <div className="space-y-2">
                             {bestTimes.bestDays.map((d) => (
@@ -327,7 +326,7 @@ export default function AnalyticsPage() {
                       )}
 
                       <p className="text-xs text-gray-400">
-                        Basado en {bestTimes.totalPostsAnalyzed} publicaciones analizadas
+                        {t('analytics_based_on')} {bestTimes.totalPostsAnalyzed} {t('analytics_posts_analyzed')}
                       </p>
                     </>
                   )}
@@ -336,7 +335,7 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
                     <CalendarDaysIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">Cargando mejores horarios...</p>
+                    <p className="text-sm text-gray-400">{t('analytics_loading_times')}</p>
                   </div>
                 </div>
               )}
@@ -348,7 +347,7 @@ export default function AnalyticsPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center gap-2 mb-5">
                 <ChartBarIcon className="h-5 w-5 text-blue-600" />
-                <h2 className="text-lg font-bold text-gray-900">Top Posts por Engagement</h2>
+                <h2 className="text-lg font-bold text-gray-900">{t('analytics_top_posts')}</h2>
               </div>
               <div className="space-y-3">
                 {topPosts.map((post, idx) => (
@@ -362,12 +361,12 @@ export default function AnalyticsPage() {
                         Post ID: {post.externalPostId || post.id}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {post.postedAt ? new Date(post.postedAt).toLocaleDateString('es-ES') : ''}
+                        {post.postedAt ? new Date(post.postedAt).toLocaleDateString() : ''}
                       </p>
                     </div>
                     <div className="flex gap-6 text-sm flex-shrink-0">
                       <div className="text-center">
-                        <p className="text-xs text-gray-400">Vistas</p>
+                        <p className="text-xs text-gray-400">{t('analytics_views')}</p>
                         <p className="font-semibold">{fmt(post.viewsCount)}</p>
                       </div>
                       <div className="text-center">
@@ -375,7 +374,7 @@ export default function AnalyticsPage() {
                         <p className="font-semibold">{fmt(post.likesCount)}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-400">Eng.</p>
+                        <p className="text-xs text-gray-400">{t('analytics_eng')}</p>
                         <p className="font-semibold text-green-600">{(post.engagementRate || 0).toFixed(1)}%</p>
                       </div>
                     </div>
@@ -390,7 +389,7 @@ export default function AnalyticsPage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BanknotesIcon className="h-5 w-5 text-green-600" />
-                <h2 className="text-lg font-bold text-gray-900">Ingresos por Monetización</h2>
+                <h2 className="text-lg font-bold text-gray-900">{t('analytics_revenue')}</h2>
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">YouTube + Meta</span>
               </div>
               <div className="flex gap-1">
@@ -416,26 +415,26 @@ export default function AnalyticsPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       {
-                        label: 'Ingresos Estimados',
+                        label: t('analytics_revenue_estimated'),
                         value: `$${revenue.totalEstimatedRevenueUsd.toFixed(2)}`,
                         icon: CurrencyDollarIcon,
                         color: 'from-green-500 to-emerald-500',
                       },
                       {
-                        label: 'RPM Promedio',
+                        label: t('analytics_rpm'),
                         value: `$${revenue.avgRpm.toFixed(2)}`,
                         icon: ArrowTrendingUpIcon,
                         color: 'from-blue-500 to-cyan-500',
-                        subtitle: 'por 1000 vistas',
+                        subtitle: t('analytics_rpm_subtitle'),
                       },
                       {
-                        label: 'Vistas Monetizadas',
+                        label: t('analytics_monetized_views'),
                         value: fmt(revenue.totalMonetizedViews),
                         icon: EyeIcon,
                         color: 'from-purple-500 to-violet-500',
                       },
                       {
-                        label: 'Impresiones de Anuncios',
+                        label: t('analytics_ad_impressions'),
                         value: fmt(revenue.totalAdImpressions),
                         icon: ChartBarIcon,
                         color: 'from-orange-500 to-red-500',
@@ -455,7 +454,7 @@ export default function AnalyticsPage() {
                   {/* By provider breakdown */}
                   {Object.keys(revenue.byProvider).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Por plataforma</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('analytics_by_platform')}</p>
                       <div className="space-y-3">
                         {Object.entries(revenue.byProvider).map(([provider, data]) => (
                           <div key={provider} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
@@ -464,15 +463,15 @@ export default function AnalyticsPage() {
                             </span>
                             <div className="flex-1 grid grid-cols-3 gap-4 text-sm">
                               <div>
-                                <p className="text-xs text-gray-400">Ingresos est.</p>
+                                <p className="text-xs text-gray-400">{t('analytics_revenue_est')}</p>
                                 <p className="font-bold text-green-700">${data.estimatedRevenueUsd.toFixed(2)}</p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-400">RPM</p>
+                                <p className="text-xs text-gray-400">{t('analytics_rpm_short')}</p>
                                 <p className="font-semibold text-gray-900">${data.rpm.toFixed(2)}</p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-400">Vistas monetizadas</p>
+                                <p className="text-xs text-gray-400">{t('analytics_monetized_views_short')}</p>
                                 <p className="font-semibold text-gray-900">{fmt(data.monetizedViews)}</p>
                               </div>
                             </div>
@@ -495,15 +494,13 @@ export default function AnalyticsPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-400">
-                    Los ingresos son estimaciones basadas en datos de YouTube Analytics y Meta Creator Studio. Los valores reales pueden variar.
-                  </p>
+                  <p className="text-xs text-gray-400">{t('analytics_revenue_disclaimer')}</p>
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-10">
                   <div className="text-center">
                     <BanknotesIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">Cargando datos de monetización...</p>
+                    <p className="text-sm text-gray-400">{t('analytics_loading_revenue')}</p>
                   </div>
                 </div>
               )}
@@ -514,11 +511,8 @@ export default function AnalyticsPage() {
           {!isLoading && !brandMetrics && (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
               <ChartBarIcon className="h-14 w-14 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos de analytics todavía</h3>
-              <p className="text-gray-500 text-sm max-w-md mx-auto">
-                Las métricas aparecerán aquí una vez que publiques contenido en tus redes sociales.
-                El sistema las sincroniza automáticamente cada hora.
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('analytics_no_data')}</h3>
+              <p className="text-gray-500 text-sm max-w-md mx-auto">{t('analytics_no_data_desc')}</p>
             </div>
           )}
         </div>

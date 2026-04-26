@@ -214,6 +214,59 @@ body {
   border-color: #6b7280 !important;
 }
 
+/* Landing page transparent backgrounds */
+.dark .bg-white\/80 {
+  background-color: rgba(17, 24, 39, 0.8) !important;
+}
+
+.dark .bg-gray-50\/50 {
+  background-color: rgba(17, 24, 39, 0.5) !important;
+}
+
+/* Landing gradient blobs */
+.dark .from-blue-50 {
+  --tw-gradient-from: rgba(59, 130, 246, 0.08) !important;
+}
+
+.dark .from-purple-50 {
+  --tw-gradient-from: rgba(147, 51, 234, 0.08) !important;
+}
+
+.dark .via-purple-50 {
+  --tw-gradient-via: rgba(147, 51, 234, 0.05) !important;
+}
+
+.dark .via-blue-50 {
+  --tw-gradient-via: rgba(59, 130, 246, 0.05) !important;
+}
+
+/* Landing feature cards hover */
+.dark .hover\:border-purple-100:hover {
+  border-color: rgba(147, 51, 234, 0.3) !important;
+}
+
+.dark .hover\:shadow-purple-50:hover {
+  --tw-shadow-color: rgba(147, 51, 234, 0.1) !important;
+}
+
+.dark .hover\:shadow-purple-200:hover {
+  --tw-shadow-color: rgba(147, 51, 234, 0.2) !important;
+}
+
+/* Landing pill badge */
+.dark .from-blue-50.to-purple-50 {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+.dark .border-blue-100 {
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Footer */
+.dark footer {
+  border-color: #374151 !important;
+}
+
 /* Scrollbars */
 .dark ::-webkit-scrollbar {
   width: 8px;

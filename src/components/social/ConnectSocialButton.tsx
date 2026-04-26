@@ -41,7 +41,7 @@ export default function ConnectSocialButton({ brandId }: ConnectSocialButtonProp
             className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+          <div className="absolute left-0 bottom-full mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
               <p className="text-sm font-semibold text-gray-700">Selecciona una red social</p>
             </div>

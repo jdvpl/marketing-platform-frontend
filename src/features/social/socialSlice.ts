@@ -200,6 +200,28 @@ export const fetchCalendarPosts = createAsyncThunk(
   }
 );
 
+// Desconectar cuenta social
+export const disconnectSocialAccount = createAsyncThunk(
+  'social/disconnect',
+  async (accountId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/social/accounts/${accountId}/disconnect`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.error || 'Error al desconectar cuenta');
+      }
+
+      return accountId;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Error de red');
+    }
+  }
+);
+
 // Obtener publicaciones programadas
 export const fetchScheduledPosts = createAsyncThunk(
   'social/fetchScheduled',
@@ -255,6 +277,13 @@ const socialSlice = createSlice({
       })
       .addCase(connectSocialAccount.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Disconnect account
+      .addCase(disconnectSocialAccount.fulfilled, (state, action: PayloadAction<string>) => {
+        state.accounts = state.accounts.filter((a) => a.id !== action.payload);
+      })
+      .addCase(disconnectSocialAccount.rejected, (state, action) => {
         state.error = action.payload as string;
       })
       // Publish content

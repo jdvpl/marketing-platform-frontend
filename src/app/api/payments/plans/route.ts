@@ -19,7 +19,28 @@ export async function GET() {
     if (!response.ok) {
       return NextResponse.json({ error: data.error || 'Error al cargar planes' }, { status: response.status });
     }
-    return NextResponse.json(data);
+
+    // Map backend response to frontend Plan interface
+    const FEATURES_MAP: Record<string, string[]> = {
+      FREE: ['1 marca', '3 publicaciones/día', '5 generaciones IA/mes', 'Analíticas básicas', 'Soporte por email'],
+      PRO: ['5 marcas', '50 publicaciones/día', '100 generaciones IA/mes', 'Analíticas avanzadas', 'Programación automática', 'Soporte prioritario'],
+      ENTERPRISE: ['Marcas ilimitadas', 'Publicaciones ilimitadas', 'IA ilimitada', 'Analíticas premium + Revenue', 'API access', 'Gestor de cuenta dedicado', 'SLA 99.9%'],
+    };
+
+    const plans = (Array.isArray(data) ? data : []).map((plan: Record<string, unknown>) => ({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      monthlyPrice: plan.priceMonthlyUsd ?? 0,
+      yearlyPrice: plan.priceYearlyUsd ?? 0,
+      currency: 'usd',
+      features: FEATURES_MAP[plan.type as string] || [],
+      stripePriceIdMonthly: plan.stripePriceIdMonthly || null,
+      stripePriceIdYearly: plan.stripePriceIdYearly || null,
+      highlighted: plan.type === 'PRO',
+    }));
+
+    return NextResponse.json(plans);
   } catch {
     // Return static fallback plans when backend is unavailable
     return NextResponse.json([

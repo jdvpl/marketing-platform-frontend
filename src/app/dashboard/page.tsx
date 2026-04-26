@@ -20,6 +20,7 @@ import {
   HeartIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/hooks/useTranslation';
 
 function fmt(n?: number) {
   if (n === undefined || n === null) return '0';
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const { brandMetrics, growthTrend, isLoading: metricsLoading } = useAppSelector((s) => s.metrics);
   const { accounts: socialAccounts } = useAppSelector((s) => s.social);
   const { user } = useAppSelector((s) => s.auth);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (selectedBrandId) {
@@ -52,28 +54,28 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      name: 'Campañas Activas',
+      name: t('dash_stat_active_campaigns'),
       value: String(activeCampaigns.length),
-      total: `${campaigns.length} total`,
+      total: `${campaigns.length} ${t('dash_stat_total')}`,
       icon: ChartBarIcon,
       color: 'from-blue-500 to-cyan-500',
     },
     {
-      name: 'Total Vistas',
+      name: t('dash_stat_total_views'),
       value: fmt(summary?.totalViews),
       total: `${fmt(summary?.totalLikes)} likes`,
       icon: EyeIcon,
       color: 'from-purple-500 to-pink-500',
     },
     {
-      name: 'Engagement',
+      name: t('dash_stat_engagement'),
       value: summary?.avgEngagementRate || '0%',
-      total: `${fmt(summary?.totalShares)} compartidos`,
+      total: `${fmt(summary?.totalShares)} ${t('dash_stat_shares')}`,
       icon: ArrowTrendingUpIcon,
       color: 'from-green-500 to-emerald-500',
     },
     {
-      name: 'Seguidores Ganados',
+      name: t('dash_stat_followers_gained'),
       value: growthTrend ? `+${fmt(growthTrend.totalFollowersGained)}` : '0',
       total: '30 días',
       icon: UserGroupIcon,
@@ -82,10 +84,10 @@ export default function DashboardPage() {
   ];
 
   const quickActions = [
-    { name: 'Nueva Campaña', description: 'Crea una nueva campaña', icon: ChartBarIcon, href: '/campaigns', color: 'from-blue-500 to-cyan-500' },
-    { name: 'Generar Contenido IA', description: 'Crea contenido con IA', icon: SparklesIcon, href: '/content-ai', color: 'from-purple-500 to-pink-500' },
-    { name: 'Conectar Red Social', description: 'Vincula una cuenta', icon: ShareIcon, href: '/social', color: 'from-green-500 to-emerald-500' },
-    { name: 'Ver Analytics', description: 'Analiza el rendimiento', icon: ChartBarIcon, href: '/analytics', color: 'from-orange-500 to-red-500' },
+    { name: t('dash_quick_new_campaign'), description: t('dash_quick_new_campaign_desc'), icon: ChartBarIcon, href: '/campaigns', color: 'from-blue-500 to-cyan-500' },
+    { name: t('dash_quick_ai_content'), description: t('dash_quick_ai_content_desc'), icon: SparklesIcon, href: '/content-ai', color: 'from-purple-500 to-pink-500' },
+    { name: t('dash_quick_connect_social'), description: t('dash_quick_connect_social_desc'), icon: ShareIcon, href: '/social', color: 'from-green-500 to-emerald-500' },
+    { name: t('dash_quick_analytics'), description: t('dash_quick_analytics_desc'), icon: ChartBarIcon, href: '/analytics', color: 'from-orange-500 to-red-500' },
   ];
 
   const getStatusColor = (status: string) => {
@@ -104,7 +106,7 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white">
             <h1 className="text-3xl font-bold mb-2">
-              Hola, {user?.email?.split('@')[0] || 'usuario'}!
+              {t('common_hello')}, {user?.email?.split('@')[0] || t('header_user')}!
             </h1>
             <p className="text-blue-100 text-lg">
               {selectedCompany ? (
@@ -114,7 +116,7 @@ export default function DashboardPage() {
                   <span className="ml-3 px-2 py-0.5 bg-white/20 rounded-full text-xs font-medium">{planName}</span>
                 </>
               ) : (
-                'Crea una empresa para comenzar'
+                t('common_no_company_start')
               )}
             </p>
           </div>
@@ -150,7 +152,7 @@ export default function DashboardPage() {
 
           {/* Quick Actions */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dash_quick_actions')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {quickActions.map((action) => (
                 <Link
@@ -171,7 +173,7 @@ export default function DashboardPage() {
           {/* Connected Accounts */}
           {socialAccounts.length > 0 && (
             <div className="flex gap-2 flex-wrap">
-              <span className="text-sm text-gray-500 mr-2 self-center">Redes conectadas:</span>
+              <span className="text-sm text-gray-500 mr-2 self-center">{t('dash_connected_networks')}</span>
               {socialAccounts.map((acc) => (
                 <span
                   key={acc.id}
@@ -191,18 +193,18 @@ export default function DashboardPage() {
           {/* Recent Campaigns Table */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Campañas Recientes</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('dash_recent_campaigns')}</h2>
               <Link href="/campaigns" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
-                Ver todas →
+                {t('common_view_all')}
               </Link>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               {campaigns.length === 0 ? (
                 <div className="text-center py-12">
                   <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">No hay campañas todavía</p>
+                  <p className="text-sm text-gray-500">{t('dash_no_campaigns')}</p>
                   <Link href="/campaigns" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    Crear primera campaña →
+                    {t('dash_create_first_campaign')}
                   </Link>
                 </div>
               ) : (
@@ -210,10 +212,10 @@ export default function DashboardPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaña</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objetivo</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Programada</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dash_col_campaign')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dash_col_status')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dash_col_objective')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dash_col_scheduled')}</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -249,7 +251,7 @@ export default function DashboardPage() {
               <div className="bg-white rounded-xl p-6 border border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
                   <UserGroupIcon className="h-5 w-5 text-purple-600" />
-                  <h3 className="text-lg font-bold text-gray-900">Crecimiento (30 días)</h3>
+                  <h3 className="text-lg font-bold text-gray-900">{t('dash_growth_30d')}</h3>
                 </div>
                 <div className="space-y-3">
                   {growthTrend.accounts.map((acc) => (
@@ -261,7 +263,7 @@ export default function DashboardPage() {
                         {acc.provider}
                       </span>
                       <div className="flex-1 text-sm">
-                        <span className="font-medium">{fmt(acc.followersEnd)} seg.</span>
+                        <span className="font-medium">{fmt(acc.followersEnd)} {t('dash_followers_abbr')}</span>
                       </div>
                       <span className={`text-sm font-semibold ${acc.growthRatePct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {acc.growthRatePct >= 0 ? '+' : ''}{acc.growthRatePct.toFixed(1)}%
@@ -275,7 +277,7 @@ export default function DashboardPage() {
             {/* Top Platforms */}
             {brandMetrics && (
               <div className="bg-white rounded-xl p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Rendimiento por Red</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('dash_perf_by_network')}</h3>
                 <div className="space-y-4">
                   {Object.entries(brandMetrics.byProvider).map(([provider, posts]) => {
                     const totalViews = posts.reduce((s, p) => s + (p.viewsCount || 0), 0);

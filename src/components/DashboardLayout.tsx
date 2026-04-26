@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,8 +26,13 @@ import {
   BeakerIcon,
   DocumentDuplicateIcon,
   EyeIcon,
+  GlobeAltIcon,
+  ChevronDownIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 import CompanyBrandSelector from './CompanyBrandSelector';
+import ThemeToggle, { applyTheme as applyThemeFromToggle } from './ThemeToggle';
+import { type Lang, langLabels, getLangFromCookie, setLangCookie, dashboardTranslations } from '@/lib/i18n';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -37,61 +42,56 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [theme, setTheme] = useState<string>('light');
+  const [lang, setLang] = useState<Lang>('es');
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  // Load theme from settings
-  const loadTheme = useCallback(async () => {
-    try {
-      const response = await fetch('/api/settings');
-      if (response.ok) {
-        const data = await response.json();
-        const userTheme = data.theme || 'light';
-        setTheme(userTheme);
-        applyTheme(userTheme);
-      }
-    } catch {
-      // Default to light
-    }
+  // Load theme from cookie
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    const savedTheme = match ? match[1] : 'light';
+    setTheme(savedTheme);
+    applyThemeFromToggle(savedTheme);
+
+    // Listen for theme changes from ThemeToggle
+    const observer = new MutationObserver(() => {
+      const isDarkNow = document.documentElement.classList.contains('dark');
+      setTheme(isDarkNow ? 'dark' : 'light');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
   }, []);
 
+  // Load language from cookie
   useEffect(() => {
-    if (user?.email) {
-      loadTheme();
-    }
-  }, [user?.email, loadTheme]);
+    setLang(getLangFromCookie());
+  }, []);
 
-  const applyTheme = (t: string) => {
-    const root = document.documentElement;
-    if (t === 'dark') {
-      root.classList.add('dark');
-    } else if (t === 'auto') {
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    } else {
-      root.classList.remove('dark');
-    }
+  const changeLang = (l: Lang) => {
+    setLang(l);
+    setLangMenuOpen(false);
+    setLangCookie(l);
   };
 
+  const t = dashboardTranslations[lang];
+
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-    { name: 'Empresas', href: '/companies', icon: BuildingOfficeIcon },
-    { name: 'Marcas', href: '/brands', icon: TagIcon },
-    { name: 'Campañas', href: '/campaigns', icon: MegaphoneIcon },
-    { name: 'Redes Sociales', href: '/social', icon: ShareIcon },
-    { name: 'Videos', href: '/videos', icon: FilmIcon },
-    { name: 'Calendario', href: '/calendar', icon: CalendarDaysIcon },
-    { name: 'Hashtags', href: '/hashtags', icon: HashtagIcon },
-    { name: 'Comentarios', href: '/comments', icon: ChatBubbleLeftRightIcon },
-    { name: 'A/B Testing', href: '/ab-testing', icon: BeakerIcon },
-    { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon },
-    { name: 'Preview', href: '/preview', icon: EyeIcon },
-    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
-    { name: 'IA Generativa', href: '/content-ai', icon: SparklesIcon },
-    { name: 'Pagos', href: '/payments', icon: CreditCardIcon },
+    { name: t.sidebar_dashboard, href: '/dashboard', icon: HomeIcon },
+    { name: t.sidebar_companies, href: '/companies', icon: BuildingOfficeIcon },
+    { name: t.sidebar_brands, href: '/brands', icon: TagIcon },
+    { name: t.sidebar_campaigns, href: '/campaigns', icon: MegaphoneIcon },
+    { name: t.sidebar_social, href: '/social', icon: ShareIcon },
+    { name: t.sidebar_videos, href: '/videos', icon: FilmIcon },
+    { name: t.sidebar_calendar, href: '/calendar', icon: CalendarDaysIcon },
+    { name: t.sidebar_hashtags, href: '/hashtags', icon: HashtagIcon },
+    { name: t.sidebar_comments, href: '/comments', icon: ChatBubbleLeftRightIcon },
+    { name: t.sidebar_ab, href: '/ab-testing', icon: BeakerIcon },
+    { name: t.sidebar_templates, href: '/templates', icon: DocumentDuplicateIcon },
+    { name: t.sidebar_preview, href: '/preview', icon: EyeIcon },
+    { name: t.sidebar_analytics, href: '/analytics', icon: ChartBarIcon },
+    { name: t.sidebar_ai, href: '/content-ai', icon: SparklesIcon },
+    { name: t.sidebar_payments, href: '/payments', icon: CreditCardIcon },
   ];
 
   const isDark = theme === 'dark' || (theme === 'auto' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -113,7 +113,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         const isActive = pathname === item.href;
         return (
           <Link
-            key={item.name}
+            key={item.href}
             href={item.href}
             onClick={onClickExtra}
             className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
@@ -131,6 +131,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const renderFooter = (onClickExtra?: () => void) => (
     <div className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} p-4`}>
       <Link
+        href="/"
+        onClick={onClickExtra}
+        className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors mb-2 ${sidebarText} ${sidebarHover}`}
+      >
+        <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-3 flex-shrink-0" />
+        {t.sidebar_landing}
+      </Link>
+      <Link
         href="/settings"
         onClick={onClickExtra}
         className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors mb-2 ${
@@ -138,7 +146,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         }`}
       >
         <Cog6ToothIcon className="h-5 w-5 mr-3 flex-shrink-0" />
-        Configuración
+        {t.sidebar_settings}
       </Link>
       <button
         onClick={() => { onClickExtra?.(); logout(); }}
@@ -147,8 +155,45 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         }`}
       >
         <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3 flex-shrink-0" />
-        Cerrar Sesión
+        {t.sidebar_logout}
       </button>
+    </div>
+  );
+
+  const LanguageSelector = () => (
+    <div className="relative">
+      <button
+        onClick={() => setLangMenuOpen(!langMenuOpen)}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          isDark ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+        }`}
+      >
+        <GlobeAltIcon className="h-4 w-4" />
+        <span className="hidden lg:inline">{langLabels[lang]}</span>
+        <ChevronDownIcon className="h-3 w-3" />
+      </button>
+      {langMenuOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setLangMenuOpen(false)} />
+          <div className={`absolute right-0 top-full mt-1 w-40 rounded-lg shadow-lg border z-50 py-1 ${
+            isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            {(Object.keys(langLabels) as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => changeLang(l)}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                  l === lang
+                    ? isDark ? 'bg-blue-900/40 text-blue-300 font-medium' : 'bg-blue-50 text-blue-700 font-medium'
+                    : isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {langLabels[l]}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -170,7 +215,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            <nav className="flex-1 min-h-0 px-4 py-4 space-y-1 overflow-y-auto">
               {renderNavLinks(() => setSidebarOpen(false))}
             </nav>
             {renderFooter(() => setSidebarOpen(false))}
@@ -180,14 +225,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className={`flex flex-col flex-grow ${sidebarBg} border-r`}>
+        <div className={`flex flex-col h-full ${sidebarBg} border-r`}>
           <div className={`flex h-16 items-center px-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} gap-2`}>
             <img src="/assets/icon.png" alt="ContenixIA" className="w-8 h-8 rounded-lg" />
             <span className={`text-lg font-bold ${brandText}`}>
               Contenix<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IA</span>
             </span>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 min-h-0 px-4 py-4 space-y-1 overflow-y-auto">
             {renderNavLinks()}
           </nav>
           {renderFooter()}
@@ -209,11 +254,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center gap-4">
               <h2 className={`text-lg font-semibold hidden lg:block ${headerText}`}>
-                {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+                {navigation.find(item => item.href === pathname)?.name || t.sidebar_dashboard}
               </h2>
               <CompanyBrandSelector />
             </div>
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
+            <div className="flex items-center gap-x-3 lg:gap-x-4">
+              <LanguageSelector />
+              <ThemeToggle />
               <div className="relative">
                 <button
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -226,11 +273,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
                     <div className={`absolute right-0 top-full mt-2 w-80 rounded-lg shadow-lg border z-50 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                       <div className={`px-4 py-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
-                        <h3 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Notificaciones</h3>
+                        <h3 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{t.notifications_title}</h3>
                       </div>
                       <div className="py-8 text-center">
                         <BellIcon className={`h-10 w-10 mx-auto mb-2 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />
-                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>No tienes notificaciones</p>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.notifications_empty}</p>
                       </div>
                     </div>
                   </>
@@ -243,7 +290,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <UserCircleIcon className={`h-8 w-8 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                 <div className="hidden lg:block">
                   <p className={`text-sm font-semibold ${headerText}`}>
-                    {user?.email || 'Usuario'}
+                    {user?.email || t.header_user}
                   </p>
                 </div>
               </div>
